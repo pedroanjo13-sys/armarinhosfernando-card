@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: armarinhosfernando-card
+    name: armarinhosfernando
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python3 server.py

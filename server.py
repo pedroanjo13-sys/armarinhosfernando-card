@@ -3179,7 +3179,7 @@ def _keepalive_worker():
             except Exception:
                 pass
         # Faz ping externo na URL pública do Render para nunca hibernar
-        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "https://armarinhosfernando-card.onrender.com").strip().rstrip("/")
+        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "https://armarinhosfernando.onrender.com").strip().rstrip("/")
         if render_ext_url.startswith("https://"):
             try:
                 req_r = urllib.request.Request(
