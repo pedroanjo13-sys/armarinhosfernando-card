@@ -148,7 +148,7 @@ function renderAll() {
   if (store.brand_color) {
     document.documentElement.style.setProperty('--primary', store.brand_color);
   }
-  document.getElementById('sidebar-card-name').textContent = store.card_brand_name || 'BomPreço Prime Card';
+  document.getElementById('sidebar-card-name').textContent = store.card_brand_name || 'Cartão Armarinhos Fernando';
   document.getElementById('sidebar-store-name').textContent = store.store_name || 'Private Label • Black & Gold';
   document.getElementById('sidebar-block-days').textContent = `D+${store.auto_block_days || 5} de atraso`;
   document.getElementById('sidebar-rates-summary').textContent =
@@ -1286,7 +1286,7 @@ function updateSimulatorView() {
     <div class="store-card-visual ${sim.st.card_blocked_by_delay ? 'blocked' : sim.st.card_tier.includes('VIP') ? 'vip' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <div style="font-size:17px; font-weight:800; letter-spacing:0.3px;">${store.card_brand_name || 'BomPreço Prime Card'}</div>
+          <div style="font-size:17px; font-weight:800; letter-spacing:0.3px;">${store.card_brand_name || 'Cartão Armarinhos Fernando'}</div>
           <div style="font-size:11px; opacity:0.85;">${store.store_name || 'Rede Varejo'} • BIN Private Label 6060</div>
         </div>
         <span class="badge ${sim.st.card_blocked_by_delay ? 'badge-overdue-critical' : 'badge-paid'}">
@@ -1451,22 +1451,22 @@ async function pollLiveSync() {
     if (data.external_links) {
       const cadCode = document.getElementById('ext-code-cadastro');
       const cadBtn = document.getElementById('ext-btn-cadastro');
-      if (cadCode) cadCode.textContent = 'https://promotorbompreco.com';
+      if (cadCode) cadCode.textContent = 'https://promotorarmarinhosfernando.com';
       if (cadBtn && data.external_links.cadastro_url) cadBtn.href = data.external_links.cadastro_url;
 
       const cCode = document.getElementById('ext-code-cliente');
       const cBtn = document.getElementById('ext-btn-cliente');
-      if (cCode) cCode.textContent = 'https://appbompreco.com';
+      if (cCode) cCode.textContent = 'https://apparmarinhosfernando.com';
       if (cBtn && data.external_links.client_app_url) cBtn.href = data.external_links.client_app_url;
 
       const wCode = document.getElementById('ext-code-webpos');
       const wBtn = document.getElementById('ext-btn-webpos');
-      if (wCode) wCode.textContent = 'https://webposbompreco.com';
+      if (wCode) wCode.textContent = 'https://webposarmarinhosfernando.com';
       if (wBtn && data.external_links.webpos_url) wBtn.href = data.external_links.webpos_url;
 
       const aCode = document.getElementById('ext-code-admin');
       const aBtn = document.getElementById('ext-btn-admin');
-      if (aCode) aCode.textContent = 'https://admbompreco.com';
+      if (aCode) aCode.textContent = 'https://admarmarinhosfernando.com';
       if (aBtn && data.external_links.admin_url) aBtn.href = data.external_links.admin_url;
     }
 

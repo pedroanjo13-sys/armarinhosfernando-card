@@ -52,7 +52,7 @@ def sync_to_github(commit_msg="Atualizacao automatica BomPreco Prime Card"):
         "git", "add",
         "server.py", "start_service.py", "auto_sync_github.py",
         "requirements.txt", "Procfile", "Dockerfile", "render.yaml",
-        "index.html", "portal.html", "webpos.html", "cadastro.html", "styles.css", "app.js",
+        "index.html", "portal.html", "webpos.html", "cadastro.html", "styles.css", "app.js", "logo-af.png",
         "public/", "data/dm_varejo.db", ".gitignore"
     ])
     run_git(["git", "commit", "-m", commit_msg])

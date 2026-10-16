@@ -39,10 +39,10 @@ def get_store_settings(conn=None):
         return dict(row)
     return {
         "id": 1,
-        "store_name": "Supermercados & Magazine BomPreço S.A.",
-        "card_brand_name": "BomPreço Prime Card",
+        "store_name": "Armarinhos Fernando Ltda.",
+        "card_brand_name": "Cartão Armarinhos Fernando",
         "cnpj": "24.890.100/0001-60",
-        "pix_key": "faturas@bomprecocard.com.br",
+        "pix_key": "faturas@armarinhosfernando.com.br",
         "support_whatsapp": "5511980005544",
         "anuidade_faturada_brl": 14.90,
         "seguro_protegido_brl": 9.90,
@@ -199,10 +199,10 @@ def init_db():
                 auto_block_days, first_purchase_discount_pct, brand_color
             ) VALUES (
                 1,
-                'Supermercados & Magazine BomPreço S.A.',
-                'BomPreço Prime Card',
+                'Armarinhos Fernando Ltda.',
+                'Cartão Armarinhos Fernando',
                 '24.890.100/0001-60',
-                'faturas@bomprecocard.com.br',
+                'faturas@armarinhosfernando.com.br',
                 '5511980005544',
                 14.90, 9.90, 5.90,
                 2.0, 11.9, 4.99, 6.9,
@@ -285,7 +285,7 @@ def init_db():
             paid_amount REAL DEFAULT NULL,
             promise_date TEXT DEFAULT NULL,
             promise_note TEXT DEFAULT NULL,
-            pix_key TEXT DEFAULT '00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br5204000053039865802BR',
+            pix_key TEXT DEFAULT '00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br5204000053039865802BR',
             digitable_line TEXT DEFAULT '23793.38128 60084.219018 27391.100009 8 98700000048000',
             last_contact_at TEXT DEFAULT NULL,
             last_stage_sent TEXT DEFAULT NULL,
@@ -745,7 +745,7 @@ def seed_dm_data(cur):
             None,
             None,
             None,
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br52040000530398654071010.705802BR",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br52040000530398654071010.705802BR",
             "23793.38128 60084.219018 25518.100009 8 9830000101070",
             "2026-10-08 14:20",
             "D+30",
@@ -767,7 +767,7 @@ def seed_dm_data(cur):
             None,
             "2026-10-16",
             "Diego confirmou no WhatsApp que vai pagar via PIX na sexta-feira (16/10) para liberar o cartão.",
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br5204000053039865406664.805802BR",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br5204000053039865406664.805802BR",
             "23793.38128 60084.219018 23310.100009 8 9850000066480",
             "2026-10-11 11:10",
             "D+15",
@@ -789,7 +789,7 @@ def seed_dm_data(cur):
             None,
             None,
             None,
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br5204000053039865406544.805802BR",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br5204000053039865406544.805802BR",
             "23793.38128 60084.219018 28821.100009 8 9865000054480",
             "2026-10-13 09:30",
             "D+3",
@@ -811,7 +811,7 @@ def seed_dm_data(cur):
             None,
             None,
             None,
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br5204000053039865406980.005802BR",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br5204000053039865406980.005802BR",
             "23793.38128 60084.219018 21094.100009 8 9869000098000",
             "2026-10-14 08:30",
             "D0",
@@ -833,7 +833,7 @@ def seed_dm_data(cur):
             None,
             None,
             None,
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br5204000053039865406454.805802BR",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br5204000053039865406454.805802BR",
             "23793.38128 60084.219018 26640.100009 8 9875000045480",
             None,
             None,
@@ -855,7 +855,7 @@ def seed_dm_data(cur):
             840.00,
             None,
             None,
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br",
             "23793.38128 60084.219018 21094.090009 8 9839000084000",
             "2026-09-14 09:00",
             "D0",
@@ -877,7 +877,7 @@ def seed_dm_data(cur):
             554.60,
             None,
             None,
-            "00020126580014BR.GOV.BCB.PIX0126faturas@bomprecocard.com.br",
+            "00020126580014BR.GOV.BCB.PIX0126faturas@armarinhosfernando.com.br",
             "23793.38128 60084.219018 28821.090009 8 9835000053000",
             "2026-09-15 10:20",
             "D+5",
@@ -1091,7 +1091,7 @@ def render_dm_template(template_str, holder_obj, st_obj=None, store=None):
     if store is None:
         store = get_store_settings()
     portal_id = st_obj["id"] if st_obj else 1
-    link_portal = f"https://app.bomprecocard.com.br/portal?id={portal_id}"
+    link_portal = f"https://app.armarinhosfernando.com.br/portal?id={portal_id}"
     fmt_brl = lambda v: f"R$ {float(v or 0):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
     replacements = {
@@ -2365,10 +2365,10 @@ async def api_update_store(request):
             brand_color = ?
         WHERE id = 1
     """, (
-        data.get("store_name", "Supermercados & Magazine BomPreço S.A."),
-        data.get("card_brand_name", "BomPreço Prime Card"),
+        data.get("store_name", "Armarinhos Fernando Ltda."),
+        data.get("card_brand_name", "Cartão Armarinhos Fernando"),
         data.get("cnpj", "24.890.100/0001-60"),
-        data.get("pix_key", "faturas@bomprecocard.com.br"),
+        data.get("pix_key", "faturas@armarinhosfernando.com.br"),
         data.get("support_whatsapp", "5511980005544"),
         float(data.get("anuidade_faturada_brl", 14.90)),
         float(data.get("seguro_protegido_brl", 9.90)),
@@ -2813,10 +2813,10 @@ async def api_sync_version(request):
         "code_version": code_version,
         "keepalive": KEEPALIVE_INFO,
         "external_domains": {
-            "admin_domain": "https://admbompreco.com",
-            "webpos_domain": "https://webposbompreco.com",
-            "cadastro_domain": "https://promotorbompreco.com",
-            "client_app_domain": "https://appbompreco.com"
+            "admin_domain": "https://admarmarinhosfernando.com",
+            "webpos_domain": "https://webposarmarinhosfernando.com",
+            "cadastro_domain": "https://promotorarmarinhosfernando.com",
+            "client_app_domain": "https://apparmarinhosfernando.com"
         },
         "external_links": {
             "admin_url": read_pub_url("admin", 3000),
@@ -2870,7 +2870,7 @@ def _keepalive_worker():
                     if pub_url.startswith("https://"):
                         req = urllib.request.Request(
                             f"{pub_url}/api/sync-version?keepalive=1&c={cycle}",
-                            headers={"User-Agent": "BomPreco-KeepAlive-10m/1.0"},
+                            headers={"User-Agent": "Armarinhos Fernando-KeepAlive-10m/1.0"},
                         )
                         urllib.request.urlopen(req, timeout=10).read()
             except Exception:
@@ -2884,13 +2884,13 @@ async def cors_and_frame_middleware(request, handler):
     else:
         host_hdr = (request.headers.get("Host") or "").lower()
         if request.path == "/":
-            if "webposbompreco.com" in host_hdr:
+            if "webposarmarinhosfernando.com" in host_hdr:
                 resp = await webpos_page_handler(request)
-            elif "promotorbompreco.com" in host_hdr:
+            elif "promotorarmarinhosfernando.com" in host_hdr:
                 resp = await cadastro_page_handler(request)
-            elif "admbompreco.com" in host_hdr:
+            elif "admarmarinhosfernando.com" in host_hdr:
                 resp = await index_handler(request)
-            elif "appbompreco.com" in host_hdr:
+            elif "apparmarinhosfernando.com" in host_hdr:
                 resp = await portal_page_handler(request)
             else:
                 resp = await handler(request)
