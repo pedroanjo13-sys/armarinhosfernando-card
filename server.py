@@ -375,6 +375,16 @@ def init_db():
     if cur.fetchone()["c"] == 0:
         seed_dm_data(cur)
 
+    # Garantir que todas as informações da loja estejam atualizadas para Armarinhos Fernando
+    cur.execute("""
+        UPDATE store_settings
+        SET store_name = 'Armarinhos Fernando Ltda.',
+            card_brand_name = 'Cartão Armarinhos Fernando',
+            pix_key = 'faturas@armarinhosfernando.com.br'
+        WHERE id = 1
+    """)
+    cur.execute("UPDATE card_holders SET voucher_code = replace(voucher_code, '-BP', '-AF')")
+
     # Garantir que o cliente Pedro Henrique Anjo esteja sempre cadastrado mesmo em deploy novo
     cur.execute("SELECT id FROM card_holders WHERE replace(replace(cpf, '.', ''), '-', '') = '38877636882'")
     if not cur.fetchone():
@@ -2859,6 +2869,17 @@ def _keepalive_worker():
                 urllib.request.urlopen(
                     f"http://127.0.0.1:{p_num}/api/sync-version?keepalive=1", timeout=5
                 ).read()
+            except Exception:
+                pass
+        # Se estiver rodando no Render.com, faz ping externo na URL pública do Render para nunca hibernar
+        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "").strip().rstrip("/")
+        if render_ext_url.startswith("https://"):
+            try:
+                req_r = urllib.request.Request(
+                    f"{render_ext_url}/api/sync-version?keepalive=1&c={cycle}",
+                    headers={"User-Agent": "ArmarinhosFernando-Render-KeepAlive/1.0"},
+                )
+                urllib.request.urlopen(req_r, timeout=10).read()
             except Exception:
                 pass
         for r_name in ("admin", "webpos", "cliente", "cadastro"):

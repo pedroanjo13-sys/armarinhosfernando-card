@@ -70,5 +70,5 @@ def sync_to_github(commit_msg="Atualizacao automatica BomPreco Prime Card"):
 
 
 if __name__ == "__main__":
-    out = sync_to_github("Deploy 100% Automatico Arena -> GitHub (BomPreco Prime Card)")
+    out = sync_to_github("Atualizacao Armarinhos Fernando + Logo AF Transparente + Nichos Admin (Adm Geral, Credito, Cobranca)")
     print(json.dumps(out, indent=2))
