@@ -2676,11 +2676,20 @@ def _keepalive_worker():
     import urllib.request
 
     cycle = 0
+    last_synced_mtime = 0
     while True:
         time.sleep(60)
         cycle += 1
         KEEPALIVE_INFO["last_ping_at"] = datetime.datetime.now().strftime("%H:%M:%S")
         KEEPALIVE_INFO["cycle_count"] = cycle
+        try:
+            cur_mtime = int(os.path.getmtime(DB_PATH)) if os.path.exists(DB_PATH) else 0
+            if cur_mtime != last_synced_mtime:
+                last_synced_mtime = cur_mtime
+                import auto_sync_github
+                auto_sync_github.sync_to_github("Auto-Sync Arena -> GitHub")
+        except Exception:
+            pass
         for p_num in (3000, 3001, 3002, 3003):
             try:
                 urllib.request.urlopen(
