@@ -153,7 +153,6 @@
       </select>
 
       <button class="btn btn-sm btn-outline" onclick="addNewCollaborator()">+ Colaborador</button>
-      <a href="/webpos" class="btn btn-sm btn-emerald">🖥️ Ir p/ WebPOS Caixa</a>
       <a id="admin-back-btn" href="/" class="btn btn-sm btn-outline" style="display:none;">🛡️ Console Adm</a>
       <button class="btn btn-sm btn-outline" onclick="logoutColab()">🔒 Sair</button>
     </div>
@@ -436,36 +435,6 @@
                   📲 Link de configuração de <strong>Melhor Dia de Vencimento e Senha</strong> enviado para o WhatsApp <strong id="res-wa-sent" style="color:var(--gold-light);"></strong>.
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fila da Esteira em Tempo Real -->
-        <div class="card" style="margin-bottom:0;">
-          <div class="card-header">
-            <div>
-              <div class="card-title">📋 Acompanhamento da Esteira ao Vivo</div>
-              <div class="card-subtitle">Sincronizado automaticamente com a Mesa de Crédito</div>
-            </div>
-            <div class="filter-pills">
-              <button class="filter-pill active" id="flt-all" onclick="setPipelineFilter('all')">Todas</button>
-              <button class="filter-pill" id="flt-mesa" onclick="setPipelineFilter('mesa')">Na Mesa</button>
-              <button class="filter-pill" id="flt-aprov" onclick="setPipelineFilter('aprov')">Aprovadas</button>
-            </div>
-          </div>
-          <div class="card-body" style="padding:0;">
-            <div class="table-wrap" style="max-height:380px; overflow-y:auto;">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Cliente / Biometria</th>
-                    <th>Status Esteira</th>
-                    <th>Situação</th>
-                    <th>Ação</th>
-                  </tr>
-                </thead>
-                <tbody id="colab-pipeline-tbody"></tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -912,7 +881,8 @@
     }
 
     function renderPipelineTable() {
-      if (!STATE) return;
+      const tbody = document.getElementById('colab-pipeline-tbody');
+      if (!STATE || !tbody) return;
       let list = STATE.leads || [];
       if (FILTER === 'mesa') list = list.filter(l => l.lead_stage === 'mesa_credito' || l.lead_stage === 'novo_lead');
       if (FILTER === 'aprov') list = list.filter(l => l.lead_stage === 'aprovado_sem_compra' || l.lead_stage === 'cartao_ativo');
