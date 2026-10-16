@@ -2,6 +2,7 @@
 import os
 import json
 import shutil
+import datetime
 import subprocess
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -9,7 +10,7 @@ PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 SYNC_CFG_PATH = os.path.join(BASE_DIR, "data", "github_sync.json")
 
 
-def sync_to_github(commit_msg="Atualizacao automatica BomPreco Prime Card"):
+def sync_to_github(commit_msg="Atualizacao automatica Armarinhos Fernando Card"):
     if not os.path.exists(SYNC_CFG_PATH):
         return {"ok": False, "error": "github_sync.json ausente"}
 
@@ -17,7 +18,6 @@ def sync_to_github(commit_msg="Atualizacao automatica BomPreco Prime Card"):
         cfg = json.load(f)
 
     username = cfg["username"]
-    repo = cfg["repo"]
     token = cfg["token"]
 
     # Keep root copies synced with public/
@@ -55,20 +55,26 @@ def sync_to_github(commit_msg="Atualizacao automatica BomPreco Prime Card"):
         "index.html", "portal.html", "webpos.html", "cadastro.html", "styles.css", "app.js", "logo-af.png",
         "public/", "data/dm_varejo.db", ".gitignore"
     ])
-    run_git(["git", "commit", "-m", commit_msg])
+    run_git(["git", "commit", "--allow-empty", "-m", f"{commit_msg} [{datetime.datetime.now().strftime('%H:%M:%S')}]"])
 
-    auth_url = f"https://{username}:{token}@github.com/{username}/{repo}.git"
-    clean_url = f"https://github.com/{username}/{repo}.git"
+    # Push to BOTH repositories so Render (connected to bompreco-card) AND armarinhosfernando-card stay 100% synced!
+    repos = ["bompreco-card", "armarinhosfernando-card"]
+    results = {}
+    for rp in repos:
+        auth_url = f"https://{username}:{token}@github.com/{username}/{rp}.git"
+        res = run_git(["git", "push", "--force", auth_url, "main:main"])
+        results[rp] = (res.returncode == 0)
 
-    res = run_git(["git", "push", "--force", auth_url, "main:main"])
+    clean_url = f"https://github.com/{username}/armarinhosfernando-card.git"
     run_git(["git", "remote", "remove", "origin"])
     run_git(["git", "remote", "add", "origin", clean_url])
 
-    if res.returncode == 0:
-        return {"ok": True, "repo_url": f"https://github.com/{username}/{repo}"}
-    return {"ok": False, "error": res.stderr}
+    return {
+        "ok": all(results.values()),
+        "synced_repos": [f"https://github.com/{username}/{r}" for r in repos]
+    }
 
 
 if __name__ == "__main__":
-    out = sync_to_github("Atualizacao Armarinhos Fernando + Logo AF Transparente + Nichos Admin (Adm Geral, Credito, Cobranca)")
+    out = sync_to_github("Deploy Completo Armarinhos Fernando + Layout Minimalista + Simulador ROI Diretoria")
     print(json.dumps(out, indent=2))
