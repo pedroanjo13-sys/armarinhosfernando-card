@@ -57,8 +57,8 @@ def sync_to_github(commit_msg="Atualizacao automatica Armarinhos Fernando Card")
     ])
     run_git(["git", "commit", "--allow-empty", "-m", f"{commit_msg} [{datetime.datetime.now().strftime('%H:%M:%S')}]"])
 
-    # Push to armarinhosfernando-card (and mirror) so Render stays 100% synced!
-    repos = ["armarinhosfernando-card"]
+    # Push to BOTH repositories so Render AND armarinhosfernando-card stay 100% synced!
+    repos = ["bompreco-card", "armarinhosfernando-card"]
     results = {}
     for rp in repos:
         auth_url = f"https://{username}:{token}@github.com/{username}/{rp}.git"
