@@ -269,28 +269,36 @@
               <span>2. Endereço, Profissão & Renda</span>
             </div>
 
-            <div style="display:grid; grid-template-columns: 0.95fr 2.05fr; gap:12px;">
+            <div style="display:grid; grid-template-columns: 0.9fr 2.1fr; gap:12px;">
               <div class="form-group">
                 <label class="form-label">CEP *</label>
                 <div style="display:flex; gap:6px;">
                   <input type="text" id="reg-cep" class="input" placeholder="00000-000" maxlength="9" oninput="onCepInput(this)" />
-                  <button type="button" class="btn btn-sm btn-outline" onclick="buscarCep()">CEP</button>
+                  <button type="button" class="btn btn-sm btn-outline" onclick="buscarCep(false)">CEP</button>
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label">Logradouro, Bairro e Cidade/UF (Preenchido pelo CEP) *</label>
-                <input type="text" id="reg-address" class="input" placeholder="Digite o CEP para puxar Rua, Bairro e Cidade/UF automaticamente" />
+                <label class="form-label">Rua / Logradouro *</label>
+                <input type="text" id="reg-address" class="input" placeholder="Preenchido automaticamente pelo CEP" />
               </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 0.95fr 2.05fr; gap:12px;">
+            <div style="display:grid; grid-template-columns: 1.15fr 1.15fr 0.7fr 1fr; gap:10px;">
+              <div class="form-group">
+                <label class="form-label">Bairro *</label>
+                <input type="text" id="reg-neighborhood" class="input" placeholder="Bairro" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cidade / UF *</label>
+                <input type="text" id="reg-city" class="input" placeholder="Cidade/UF" />
+              </div>
               <div class="form-group">
                 <label class="form-label">Número *</label>
                 <input type="text" id="reg-address-number" class="input" placeholder="Ex: 1578" />
               </div>
               <div class="form-group">
                 <label class="form-label">Complemento</label>
-                <input type="text" id="reg-address-comp" class="input" placeholder="Ex: Apto 42, Bloco B, Casa 2 (Opcional)" />
+                <input type="text" id="reg-address-comp" class="input" placeholder="Apto / Bloco" />
               </div>
             </div>
 
@@ -604,27 +612,55 @@
         if (!autoTriggered) showToast('⚠️ Digite os 8 dígitos do CEP.');
         return;
       }
+
+      const applyAddress = (street, neighborhood, city, uf) => {
+        document.getElementById('reg-address').value = street || '';
+        const nbEl = document.getElementById('reg-neighborhood');
+        if (nbEl) nbEl.value = neighborhood || '';
+        const ctEl = document.getElementById('reg-city');
+        if (ctEl) ctEl.value = [city, uf].filter(Boolean).join('/');
+        const numInput = document.getElementById('reg-address-number');
+        if (numInput) numInput.focus();
+        showToast('📍 Endereço preenchido pelo CEP! Informe apenas Número e Complemento.');
+      };
+
+      // 1. Backend /api/cep (works in all environments including iframe previews)
       try {
         const res = await fetch(`/api/cep?cep=${cep}`);
-        const data = await res.json();
-        if (data.ok && data.full_street) {
-          document.getElementById('reg-address').value = data.full_street;
-          const numInput = document.getElementById('reg-address-number');
-          if (numInput) numInput.focus();
-          showToast('📍 Endereço preenchido pelo CEP! Informe apenas Número e Complemento.');
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && (data.logradouro || data.localidade)) {
+            applyAddress(data.logradouro, data.bairro, data.localidade, data.uf);
+            return;
+          }
         }
       } catch (e) {}
-      const map = {
-        '01310100': 'Avenida Paulista - Bela Vista, São Paulo/SP',
-        '01021200': 'Rua Vinte e Cinco de Março - Centro Histórico, São Paulo/SP',
-        '03004000': 'Rua Oriente - Brás, São Paulo/SP',
-        '04543011': 'Av. Pres. Juscelino Kubitschek - Vila Olímpia, São Paulo/SP'
-      };
-      document.getElementById('reg-address').value = map[cep] || `Rua Comercial - Centro, São Paulo/SP`;
-      const numInput = document.getElementById('reg-address-number');
-      if (numInput) numInput.focus();
-      showToast('📍 Endereço preenchido pelo CEP! Informe apenas Número e Complemento.');
+
+      // 2. Direct ViaCEP fallback
+      try {
+        const rVia = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (rVia.ok) {
+          const dVia = await rVia.json();
+          if (!dVia.erro) {
+            applyAddress(dVia.logradouro, dVia.bairro, dVia.localidade, dVia.uf);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 3. Direct BrasilAPI fallback
+      try {
+        const rBr = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+        if (rBr.ok) {
+          const dBr = await rBr.json();
+          if (dBr.city || dBr.street) {
+            applyAddress(dBr.street, dBr.neighborhood, dBr.city, dBr.state);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      showToast('⚠️ CEP não encontrado na base dos Correios. Verifique os dígitos.');
     }
 
     function updateLimitPreview() {
@@ -658,8 +694,8 @@
 
     function fillDemoCustomer() {
       const samples = [
-        { name: 'Beatriz Fontenelle', cpf: '394.812.708-45', rg: '42.918.203-1 SSP/SP', mother: 'Helena Fontenelle', wa: '5511988112233', email: 'beatriz.f@email.com.br', cep: '01310-100', addr: 'Avenida Paulista - Bela Vista, São Paulo/SP', num: '1200', comp: 'Conj. 84', occ: 'Assalariado CLT', comp_name: 'Hospital Albert Einstein', inc: 4200, score: 785 },
-        { name: 'Gustavo Mendonça', cpf: '418.920.318-82', rg: '38.102.944-X SSP/SP', mother: 'Sônia Mendonça', wa: '5511977445566', email: 'gustavo.m@email.com.br', cep: '04543-011', addr: 'Av. Pres. Juscelino Kubitschek - Vila Olímpia, São Paulo/SP', num: '512', comp: 'Bloco B', occ: 'Autônomo / MEI', comp_name: 'GM Representações', inc: 3100, score: 665 }
+        { name: 'Beatriz Fontenelle', cpf: '394.812.708-45', rg: '42.918.203-1 SSP/SP', mother: 'Helena Fontenelle', wa: '5511988112233', email: 'beatriz.f@email.com.br', cep: '01310-100', addr: 'Avenida Paulista', bairro: 'Bela Vista', city: 'São Paulo/SP', num: '1200', comp: 'Conj. 84', occ: 'Assalariado CLT', comp_name: 'Hospital Albert Einstein', inc: 4200, score: 785 },
+        { name: 'Gustavo Mendonça', cpf: '418.920.318-82', rg: '38.102.944-X SSP/SP', mother: 'Sônia Mendonça', wa: '5511977445566', email: 'gustavo.m@email.com.br', cep: '04543-011', addr: 'Av. Pres. Juscelino Kubitschek', bairro: 'Vila Nova Conceição', city: 'São Paulo/SP', num: '512', comp: 'Bloco B', occ: 'Autônomo / MEI', comp_name: 'GM Representações', inc: 3100, score: 665 }
       ];
       const p = samples[Math.floor(Math.random() * samples.length)];
       document.getElementById('reg-cpf').value = p.cpf;
@@ -670,6 +706,8 @@
       document.getElementById('reg-email').value = p.email;
       document.getElementById('reg-cep').value = p.cep;
       document.getElementById('reg-address').value = p.addr;
+      document.getElementById('reg-neighborhood').value = p.bairro;
+      document.getElementById('reg-city').value = p.city;
       document.getElementById('reg-address-number').value = p.num;
       document.getElementById('reg-address-comp').value = p.comp;
       document.getElementById('reg-occupation').value = p.occ;
@@ -690,6 +728,8 @@
       document.getElementById('reg-email').value = '';
       document.getElementById('reg-cep').value = '';
       document.getElementById('reg-address').value = '';
+      document.getElementById('reg-neighborhood').value = '';
+      document.getElementById('reg-city').value = '';
       document.getElementById('reg-address-number').value = '';
       document.getElementById('reg-address-comp').value = '';
       document.getElementById('reg-company').value = '';
@@ -741,9 +781,11 @@
       }
 
       const baseStreet = document.getElementById('reg-address').value.trim();
+      const addrBairro = (document.getElementById('reg-neighborhood')?.value || '').trim();
+      const addrCity = (document.getElementById('reg-city')?.value || '').trim();
       const addrNum = (document.getElementById('reg-address-number')?.value || '').trim();
       const addrComp = (document.getElementById('reg-address-comp')?.value || '').trim();
-      const fullAddress = `${baseStreet}${addrNum ? ', Nº ' + addrNum : ''}${addrComp ? ' (' + addrComp + ')' : ''}`;
+      const fullAddress = `${baseStreet}${addrNum ? ', Nº ' + addrNum : ''}${addrComp ? ' (' + addrComp + ')' : ''}${addrBairro ? ' - ' + addrBairro : ''}${addrCity ? ', ' + addrCity : ''}`;
 
       const payload = {
         full_name: fullName,

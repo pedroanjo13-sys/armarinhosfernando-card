@@ -1437,61 +1437,76 @@ async def api_create_lead(request):
 
 
 async def api_lookup_cep(request):
-    """Real-time Brazilian CEP lookup via ViaCEP / BrasilAPI with instant fallback."""
+    """Real-time Brazilian CEP lookup via ViaCEP / BrasilAPI / OpenCEP."""
+    import urllib.request
+    import asyncio
+
     raw_cep = (request.query.get("cep") or "").strip()
     cep = "".join(c for c in raw_cep if c.isdigit())
     if len(cep) != 8:
         return web.json_response({"ok": False, "error": "CEP deve conter 8 dígitos."}, status=400)
 
-    fallback_map = {
-        "01310100": ("Avenida Paulista", "Bela Vista", "São Paulo", "SP"),
-        "01021200": ("Rua Vinte e Cinco de Março", "Centro Histórico de São Paulo", "São Paulo", "SP"),
-        "03004000": ("Rua Oriente", "Brás", "São Paulo", "SP"),
-        "04543011": ("Avenida Presidente Juscelino Kubitschek", "Vila Nova Conceição", "São Paulo", "SP"),
-        "04750000": ("Largo Treze de Maio", "Santo Amaro", "São Paulo", "SP"),
-        "05074000": ("Rua Doze de Outubro", "Lapa", "São Paulo", "SP"),
-        "03306000": ("Praça Sílvio Romero", "Tatuapé", "São Paulo", "SP"),
-    }
-
-    logradouro = bairro = localidade = uf = ""
-    try:
-        req = urllib.request.Request(
-            f"https://viacep.com.br/ws/{cep}/json/",
-            headers={"User-Agent": "ArmarinhosFernandoCard/1.0"}
-        )
-        with urllib.request.urlopen(req, timeout=3.5) as resp:
-            d = json.loads(resp.read().decode("utf-8", errors="ignore"))
-            if not d.get("erro"):
-                logradouro = d.get("logradouro") or ""
-                bairro = d.get("bairro") or ""
-                localidade = d.get("localidade") or ""
-                uf = d.get("uf") or ""
-    except Exception:
-        pass
-
-    if not logradouro:
+    def _fetch_cep_sync(c):
+        logradouro = bairro = localidade = uf = ""
+        # 1. ViaCEP
         try:
-            req2 = urllib.request.Request(
-                f"https://brasilapi.com.br/api/cep/v1/{cep}",
-                headers={"User-Agent": "ArmarinhosFernandoCard/1.0"}
+            req = urllib.request.Request(
+                f"https://viacep.com.br/ws/{c}/json/",
+                headers={"User-Agent": "Mozilla/5.0"}
             )
-            with urllib.request.urlopen(req2, timeout=3.5) as resp2:
-                d2 = json.loads(resp2.read().decode("utf-8", errors="ignore"))
-                logradouro = d2.get("street") or ""
-                bairro = d2.get("neighborhood") or ""
-                localidade = d2.get("city") or ""
-                uf = d2.get("state") or ""
+            with urllib.request.urlopen(req, timeout=4.5) as resp:
+                d = json.loads(resp.read().decode("utf-8", errors="ignore"))
+                if not d.get("erro"):
+                    logradouro = (d.get("logradouro") or "").strip()
+                    bairro = (d.get("bairro") or "").strip()
+                    localidade = (d.get("localidade") or "").strip()
+                    uf = (d.get("uf") or "").strip()
         except Exception:
             pass
 
-    if not logradouro:
-        if cep in fallback_map:
-            logradouro, bairro, localidade, uf = fallback_map[cep]
-        else:
-            logradouro, bairro, localidade, uf = ("Rua Comercial", "Centro", "São Paulo", "SP")
+        # 2. BrasilAPI fallback
+        if not localidade:
+            try:
+                req2 = urllib.request.Request(
+                    f"https://brasilapi.com.br/api/cep/v1/{c}",
+                    headers={"User-Agent": "Mozilla/5.0"}
+                )
+                with urllib.request.urlopen(req2, timeout=4.5) as resp2:
+                    d2 = json.loads(resp2.read().decode("utf-8", errors="ignore"))
+                    logradouro = (d2.get("street") or logradouro).strip()
+                    bairro = (d2.get("neighborhood") or bairro).strip()
+                    localidade = (d2.get("city") or localidade).strip()
+                    uf = (d2.get("state") or uf).strip()
+            except Exception:
+                pass
+
+        # 3. OpenCEP fallback
+        if not localidade:
+            try:
+                req3 = urllib.request.Request(
+                    f"https://opencep.com/v1/{c}.json",
+                    headers={"User-Agent": "Mozilla/5.0"}
+                )
+                with urllib.request.urlopen(req3, timeout=4.5) as resp3:
+                    d3 = json.loads(resp3.read().decode("utf-8", errors="ignore"))
+                    logradouro = (d3.get("logradouro") or logradouro).strip()
+                    bairro = (d3.get("bairro") or bairro).strip()
+                    localidade = (d3.get("localidade") or localidade).strip()
+                    uf = (d3.get("uf") or uf).strip()
+            except Exception:
+                pass
+
+        return logradouro, bairro, localidade, uf
+
+    logradouro, bairro, localidade, uf = await asyncio.to_thread(_fetch_cep_sync, cep)
+    if not localidade and not logradouro:
+        return web.json_response({"ok": False, "error": "CEP não encontrado na base dos Correios."}, status=404)
 
     formatted_cep = f"{cep[:5]}-{cep[5:]}"
-    full_street = f"{logradouro} - {bairro}, {localidade}/{uf}".strip(" -/")
+    parts = [p for p in [logradouro, bairro] if p]
+    city_uf = f"{localidade}/{uf}".strip("/")
+    full_street = f"{' - '.join(parts)}, {city_uf}" if parts else city_uf
+
     return web.json_response({
         "ok": True,
         "cep": formatted_cep,
