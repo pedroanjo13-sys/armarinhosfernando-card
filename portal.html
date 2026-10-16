@@ -232,13 +232,16 @@
     }
 
     .prime-card {
-      background: linear-gradient(135deg, #ffffff 0%, #ffe4e6 26%, #e11d48 62%, #b91c1c 85%, #7f1d1d 100%);
-      border: 1px solid rgba(255, 255, 255, 0.65);
+      background:
+        radial-gradient(circle at 12% 18%, #ffffff 0%, rgba(255, 255, 255, 0.92) 18%, transparent 46%),
+        radial-gradient(circle at 88% 22%, rgba(220, 38, 38, 0.95) 0%, transparent 55%),
+        linear-gradient(135deg, #ffffff 0%, #eff6ff 20%, #dc2626 52%, #1d4ed8 80%, #0f2557 100%);
+      border: 1px solid rgba(255, 255, 255, 0.75);
       border-radius: 20px;
       padding: 22px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 18px 38px rgba(185, 28, 28, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      box-shadow: 0 18px 38px rgba(15, 37, 87, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
 
     .prime-card.blocked {
