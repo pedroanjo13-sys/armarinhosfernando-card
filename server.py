@@ -401,7 +401,7 @@ def init_db():
             ) VALUES (
               'Pedro Henrique Anjo', '388.776.368-82', '49.382.110-7 SSP/SP', '1996-03-14',
               'Ana Paula Anjo', '5511997763688', 'pedro.anjo@primevip.com.br',
-              'Empresário / Executivo', 12500.0, 'Loja 01 - Matriz Centro', 'Vanessa (Consultora Prime)',
+              'Empresário / Executivo', 12500.0, 'Matriz 25 de Março', 'Vanessa (Consultora Prime)',
               845, 'Validada (99.8% FaceMatch)', 'CNH Digital Validada', 1, 'ativo_faturado',
               4000.0, 0.0, '6060 8421 9020 3682', '3682', '779', '10/2031', '2030',
               'VIP Internacional', 15, 5, 1, 1, 0, 'VCH-3682-VIP',
@@ -440,7 +440,7 @@ def seed_dm_data(cur):
             "camila.santos94@gmail.com",
             "Técnica de Enfermagem",
             4200.00,
-            "Loja 01 - Matriz Centro",
+            "Matriz 25 de Março",
             "Vanessa (Consultora Prime)",
             685,
             "Validada (99.4% FaceMatch)",
@@ -475,7 +475,7 @@ def seed_dm_data(cur):
             "lucas.oliveira@outlook.com",
             "Conferente de Logística",
             3100.00,
-            "Loja 02 - Atacarejo Sul",
+            "Filial Brás",
             "Rodrigo (Consultor Prime)",
             620,
             "Validada (98.7% FaceMatch)",
@@ -510,7 +510,7 @@ def seed_dm_data(cur):
             "renata.almeida@uol.com.br",
             "Vendedora Autônoma",
             5400.00,
-            "Loja 01 - Matriz Centro",
+            "Matriz 25 de Março",
             "Vanessa (Consultora Prime)",
             430,
             "Validada (99.1% FaceMatch)",
@@ -545,7 +545,7 @@ def seed_dm_data(cur):
             "diego.martins@gmail.com",
             "Motorista de Aplicativo",
             3600.00,
-            "Loja 02 - Atacarejo Sul",
+            "Filial Brás",
             "Carla (Operadora Caixa 04)",
             510,
             "Validada (98.9% FaceMatch)",
@@ -580,7 +580,7 @@ def seed_dm_data(cur):
             "ju.mendes@gmail.com",
             "Professora Municipal",
             4800.00,
-            "Loja 01 - Matriz Centro",
+            "Matriz 25 de Março",
             "Rodrigo (Consultor Prime)",
             715,
             "Validada (99.5% FaceMatch)",
@@ -615,7 +615,7 @@ def seed_dm_data(cur):
             "patricia.nogueira@gmail.com",
             "Contadora Sênior",
             7800.00,
-            "Loja 01 - Matriz Centro",
+            "Matriz 25 de Março",
             "Vanessa (Consultora Prime)",
             890,
             "Validada (99.8% FaceMatch)",
@@ -724,10 +724,10 @@ def seed_dm_data(cur):
     """, holders)
 
     pos_txs = [
-        ("NSU-901842", 3, "Loja 01 - Matriz Centro", "Caixa 02 - Juliana", "parcelado_sem_juros", "Compras Supermercado + Bazar (Parcela 2/4)", 980.00, 980.00, 4, 245.00, "APROVADA", "2026-08-18 16:40"),
-        ("NSU-902119", 4, "Loja 02 - Atacarejo Sul", "Caixa 04 - Carla", "crediario_com_juros", "Eletroportáteis + Feira do Mês (3x)", 640.00, 640.00, 3, 213.33, "APROVADA", "2026-09-10 11:25"),
-        ("NSU-904510", 5, "Loja 01 - Matriz Centro", "Caixa 01 - Marcos", "parcelado_sem_juros", "Moda & Calçados Coleção Primavera (3x)", 520.00, 520.00, 3, 173.33, "APROVADA", "2026-09-28 18:10"),
-        ("NSU-905882", 6, "Loja 01 - Matriz Centro", "Caixa 02 - Juliana", "rotativo_vista", "Compras Hipermercado & Perfumaria (Vista 40 dias)", 949.30, 949.30, 1, 949.30, "APROVADA", "2026-10-02 14:50"),
+        ("NSU-901842", 3, "Matriz 25 de Março", "Caixa 02 - Juliana", "parcelado_sem_juros", "Compras Supermercado + Bazar (Parcela 2/4)", 980.00, 980.00, 4, 245.00, "APROVADA", "2026-08-18 16:40"),
+        ("NSU-902119", 4, "Filial Brás", "Caixa 04 - Carla", "crediario_com_juros", "Eletroportáteis + Feira do Mês (3x)", 640.00, 640.00, 3, 213.33, "APROVADA", "2026-09-10 11:25"),
+        ("NSU-904510", 5, "Matriz 25 de Março", "Caixa 01 - Marcos", "parcelado_sem_juros", "Moda & Calçados Coleção Primavera (3x)", 520.00, 520.00, 3, 173.33, "APROVADA", "2026-09-28 18:10"),
+        ("NSU-905882", 6, "Matriz 25 de Março", "Caixa 02 - Juliana", "rotativo_vista", "Compras Hipermercado & Perfumaria (Vista 40 dias)", 949.30, 949.30, 1, 949.30, "APROVADA", "2026-10-02 14:50"),
         ("NSU-906104", 7, "Loja 03 - Shopping Norte", "Caixa 04 - Carla", "parcelado_sem_juros", "Ferramentas & Utilidades do Lar (2x)", 430.00, 430.00, 2, 215.00, "APROVADA", "2026-10-07 19:05"),
     ]
 
@@ -1342,7 +1342,7 @@ async def api_create_lead(request):
     email = (data.get("email") or "cliente@email.com").strip()
     occupation = (data.get("occupation") or "Autônomo / Comerciante").strip()
     declared_income = float(data.get("declared_income") or 3200.0)
-    store_branch = data.get("store_branch") or "Loja 01 - Matriz Centro"
+    store_branch = data.get("store_branch") or "Matriz 25 de Março"
     promoter_name = data.get("promoter_name") or data.get("seller_name") or "Vanessa (Consultora Prime)"
     due_day = int(data.get("due_day") or 10)
     best_day = compute_best_purchase_day(due_day)
