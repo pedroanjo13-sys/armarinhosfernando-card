@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terminal WebPOS Prime — Frente de Caixa & Autorizador</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    body {
+      background: radial-gradient(circle at top right, #111e3d 0%, #070b12 55%, #05070c 100%);
+      color: #f8fafc;
+      display: block;
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .webpos-topbar {
+      background: rgba(6, 10, 19, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .webpos-hotkey-bar {
+      background: #0a101d;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.16);
+      padding: 10px 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .hotkey-btn {
+      background: #0e1628;
+      color: #cbd5e1;
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      border-radius: 9px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.15s ease;
+    }
+    .hotkey-btn kbd {
+      background: rgba(212, 175, 55, 0.2);
+      color: #f3e5ab;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+    .hotkey-btn.active, .hotkey-btn:hover {
+      background: linear-gradient(135deg, #e5c158 0%, #d4af37 55%, #b8860b 100%);
+      color: #05080f;
+      border-color: #f3e5ab;
+    }
+    .hotkey-btn.active kbd, .hotkey-btn:hover kbd {
+      background: #05080f;
+      color: #f3e5ab;
+    }
+    .webpos-layout {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 22px 24px 50px;
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .pos-panel {
+      background: linear-gradient(180deg, #0f172a 0%, #0b111e 100%);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+    .pos-panel-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #f3e5ab;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pos-panel-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 14px;
+    }
+    .holder-visor {
+      background: linear-gradient(135deg, #070b14 0%, #172554 100%);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 12px;
+      padding: 15px 18px;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .pinpad-box {
+      background: #070b14;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .pinpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .pinpad-key {
+      background: #111c33;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #f3e5ab;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .pinpad-key:hover {
+      background: #1e3a8a;
+      border-color: #d4af37;
+    }
+    /* Thermal 80mm Yellow Paper Receipt */
+    .thermal-printer-wrap {
+      background: linear-gradient(180deg, #0f172a 0%, #0b111e 100%);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 14px;
+      padding: 18px;
+      position: sticky;
+      top: 16px;
+    }
+    .thermal-bobina {
+      background: #fef9c3;
+      color: #1e293b;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 18px 16px;
+      border-radius: 6px;
+      box-shadow: inset 0 0 0 1px #fde047, 0 8px 20px rgba(0,0,0,0.35);
+      border-top: 6px dashed #ca8a04;
+      border-bottom: 6px dashed #ca8a04;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .dark-input {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 9px 12px;
+      width: 100%;
+      font-size: 13px;
+    }
+    .dark-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .pos-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+    .pos-table th {
+      text-align: left;
+      padding: 9px 10px;
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .pos-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+    }
+    @media (max-width: 980px) {
+      .webpos-layout {
+        grid-template-columns: 1fr;
+      }
+      .holder-visor {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #thermal-receipt-paper, #thermal-receipt-paper * {
+        visibility: visible;
+      }
+      #thermal-receipt-paper {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- TELA DE LOGIN DO OPERADOR DE CAIXA WEBPOS -->
+  <div id="webpos-login-overlay" style="position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 75% 15%, rgba(212,175,55,0.18) 0%, transparent 45%), radial-gradient(circle at 20% 85%, rgba(37,99,235,0.22) 0%, transparent 50%), linear-gradient(135deg, #04070d 0%, #0a1120 60%, #0f1b36 100%); display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="width:100%; max-width:430px; background:linear-gradient(180deg, #0f172a 0%, #090e1a 100%); border:1px solid rgba(212,175,55,0.45); border-radius:20px; padding:30px 26px; box-shadow:0 28px 80px rgba(0,0,0,0.8);">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="width:58px; height:58px; border-radius:16px; margin:0 auto 10px; background:linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #9a7b1c 100%); color:#05080f; font-weight:900; font-size:21px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(212,175,55,0.35);">BP</div>
+        <div style="font-size:10px; font-weight:800; color:#d4af37; text-transform:uppercase; letter-spacing:1.4px; margin-bottom:4px;">https://webposbompreco.com • Frente de Caixa</div>
+        <h2 style="font-size:20px; font-weight:900; color:#fff;">Terminal WebPOS da Loja</h2>
+        <p style="font-size:12px; color:#94a3b8; margin-top:4px;">Autentique o operador de caixa para liberar o terminal</p>
+      </div>
+
+      <div class="form-group">
+        <label class="dark-label">CPF do Operador</label>
+        <input type="text" id="login-webpos-cpf" class="dark-input" placeholder="000.000.000-00" value="418.920.318-82" maxlength="14" style="font-weight:800; letter-spacing:1px;" />
+        <input type="hidden" id="login-webpos-op" value="Caixa 01 - Frente de Loja" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label class="dark-label" style="margin-bottom:0;">Senha</label>
+          <span style="font-size:11px; color:#d4af37; font-weight:700;">Padrão: 1234</span>
+        </div>
+        <input type="password" id="login-webpos-pass" class="dark-input" value="1234" onkeydown="if(event.key==='Enter') submitWebPosLogin()" />
+      </div>
+
+      <button type="button" class="btn btn-primary" style="width:100%; padding:13px; font-size:13.5px; font-weight:900;" onclick="submitWebPosLogin()">
+        ENTRAR NO TERMINAL WEBPOS
+      </button>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="webpos-topbar">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:40px; height:40px; border-radius:10px; background:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:16px; color:#fff;">
+        BP
+      </div>
+      <div>
+        <div style="font-weight:800; font-size:16px; color:#fff;">
+          🖥️ Terminal WebPOS da Loja • <span style="color:#d4af37;">https://webposbompreco.com</span>
+        </div>
+        <div style="font-size:12px; color:#94a3b8;">
+          <span style="color:#4ade80; font-weight:700;">● ONLINE (BIN 6060 8421)</span> • Autorização de Vendas, Recebimento de Fatura na Gaveta, Saque Fácil e Estorno NSU
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select id="webpos-operator" class="dark-input" style="width:auto; padding:6px 10px; font-size:12px;">
+        <option value="Caixa 01 - Frente de Loja">👤 Operador: Caixa 01 - Frente de Loja</option>
+        <option value="Caixa 02 - Check-out Rápido">👤 Operador: Caixa 02 - Check-out Rápido</option>
+        <option value="Balcão Crediário Prime - Vanessa">👤 Operador: Balcão Crediário Prime - Vanessa</option>
+        <option value="Supervisor Fiscal - Carlos">👤 Operador: Supervisor Fiscal - Carlos</option>
+      </select>
+      <span class="badge badge-paid" style="font-size:11px;">🔒 Terminal Exclusivo PDV / Loja</span>
+      <a href="/" id="webpos-admin-back-btn" class="btn btn-sm btn-outline" style="display:none; background:#1e293b; color:#fff; border-color:#475569;">
+        🛡️ Voltar ao Console Master do Adm
+      </a>
+      <button class="btn btn-sm btn-outline" onclick="logoutWebPos()">🔒 Fechar Turno</button>
+    </div>
+  </div>
+
+  <!-- HOTKEY BAR -->
+  <div class="webpos-hotkey-bar">
+    <button class="hotkey-btn active" id="hk-sale" onclick="switchWebPosMode('sale')">
+      <kbd>F2</kbd> 🛒 Nova Venda (Cartão / Voucher)
+    </button>
+    <button class="hotkey-btn" id="hk-invoice" onclick="switchWebPosMode('invoice')">
+      <kbd>F4</kbd> 💸 Receber Fatura no Caixa (Liberar Limite)
+    </button>
+    <button class="hotkey-btn" id="hk-consult" onclick="switchWebPosMode('consult')">
+      <kbd>F6</kbd> 📈 Consulta Saldo, Extrato & Aumento Limite
+    </button>
+    <button class="hotkey-btn" id="hk-reverse" onclick="switchWebPosMode('reverse')">
+      <kbd>F8</kbd> ↩️ Estorno / Cancelamento de NSU
+    </button>
+    <button class="hotkey-btn" id="hk-closing" onclick="switchWebPosMode('closing')">
+      <kbd>F9</kbd> 📊 Fechamento de Caixa (Borderô Diário)
+    </button>
+  </div>
+
+  <div class="webpos-layout">
+    <!-- LEFT COLUMN: PORTADOR SEARCH + ACTIVE MODE -->
+    <div>
+      <!-- 1. BUSCA DE PORTADOR NO CAIXA -->
+      <div class="pos-panel">
+        <div class="pos-panel-title">
+          <span>🔍 1. Identificar Portador no Caixa (CPF, Cartão BIN 6060 ou Voucher 1ª Compra)</span>
+          <span class="badge badge-paid" id="visor-card-status-badge">Pronto p/ Leitura</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:10px; margin-top:10px;">
+          <div>
+            <label class="dark-label">Buscar por CPF, Final do Cartão ou Voucher</label>
+            <input type="text" id="webpos-search" class="dark-input" placeholder="Ex.: 5518, VCH-8942, 418.290..." oninput="filterWebPosHolders()" />
+          </div>
+          <div>
+            <label class="dark-label">Selecionar Portador na Fila do Caixa</label>
+            <select id="webpos-holder-select" class="dark-input" onchange="onSelectWebPosHolder(this.value)"></select>
+          </div>
+        </div>
+
+        <!-- VISOR DIGITAL DO PORTADOR -->
+        <div class="holder-visor" id="webpos-holder-visor"></div>
+      </div>
+
+      <!-- MODE 1: [F2] NOVA VENDA CARTÃO / VOUCHER -->
+      <div class="pos-panel webpos-mode-box" id="mode-sale">
+        <div class="pos-panel-title">
+          <span>🛒 [F2] Passar Venda no Cartão da Loja ou Voucher de 1ª Compra</span>
+          <span style="font-size:12px; color:#fb923c;">Autorização Online NSU</span>
+        </div>
+        <div class="pos-panel-sub">
+          Escolha a modalidade Prime, digite o valor da compra e valide a senha PIN de 4 dígitos do cliente.
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="dark-label">Modalidade da Venda no WebPOS</label>
+            <select id="wp-sale-modality" class="dark-input" onchange="updateWebPosSalePreview()">
+              <option value="rotativo_vista">🛒 Rotativo à Vista (Até 40 dias s/ juros)</option>
+              <option value="parcelado_sem_juros" selected>🛍️ Parcelado Loja Sem Juros (2x a 6x)</option>
+              <option value="crediario_com_juros">💳 Crediário no Cartão c/ Juros (até 12x - 4,99% a.m.)</option>
+              <option value="saque_facil">💵 Saque Fácil no Caixa (Troco em Espécie)</option>
+            </select>
+          </div>
+          <div>
+            <label class="dark-label">Valor Bruto da Venda (R$)</label>
+            <input type="number" id="wp-sale-amount" class="dark-input" value="420.00" step="10" oninput="updateWebPosSalePreview()" />
+          </div>
+          <div>
+            <label class="dark-label">Nº de Parcelas</label>
+            <select id="wp-sale-installments" class="dark-input" onchange="updateWebPosSalePreview()">
+              <option value="1">1x à Vista na Fatura</option>
+              <option value="2">2x Iguais</option>
+              <option value="3" selected>3x Iguais</option>
+              <option value="4">4x Iguais</option>
+              <option value="6">6x Iguais</option>
+              <option value="10">10x (Crediário c/ Juros)</option>
+              <option value="12">12x (Crediário c/ Juros)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:12px; margin-bottom:14px;">
+          <div>
+            <label class="dark-label">Descrição dos Produtos / Cupom Fiscal PDV</label>
+            <input type="text" id="wp-sale-items" class="dark-input" value="Compras Supermercado, Açougue & Bazar" />
+          </div>
+          <div>
+            <label class="dark-label">Vencimento 1ª Fatura</label>
+            <input type="date" id="wp-sale-due" class="dark-input" value="2026-11-10" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:14px; align-items:stretch;">
+          <!-- Resumo Financeiro da Transação -->
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="font-size:11.5px; font-weight:800; color:#94a3b8; margin-bottom:8px;">SIMULAÇÃO EM TEMPO REAL NO CAIXA</div>
+              <div id="wp-sale-simulation-box"></div>
+            </div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#6ee7b7; margin-top:10px; cursor:pointer;">
+              <input type="checkbox" id="wp-sale-first-discount" checked onchange="updateWebPosSalePreview()" />
+              <span>Aplicar <strong>10% OFF Automático</strong> se for 1ª Compra (Voucher)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:#fb923c; margin-top:6px; cursor:pointer;">
+              <input type="checkbox" id="wp-sale-force-sup" />
+              <span>🔓 <strong>Liberação Supervisor Fiscal</strong> (Autorizar mesmo c/ bloqueio de atraso)</span>
+            </label>
+          </div>
+
+          <!-- PIN PAD VIRTUAL 4 DIGITOS -->
+          <div class="pinpad-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="dark-label" style="margin:0;">🔒 PIN Pad (Senha 4 Dígitos)</span>
+              <button class="btn btn-sm" style="background:#334155; color:#fff; font-size:10.5px; padding:3px 7px;" onclick="autoFillHolderPin()">
+                ⚡ Auto-PIN Cliente
+              </button>
+            </div>
+            <input type="text" id="wp-sale-pin" maxlength="4" class="dark-input" style="margin-top:6px; text-align:center; font-size:18px; letter-spacing:8px; font-family:monospace; font-weight:800; color:#4ade80;" placeholder="••••" />
+            <div class="pinpad-grid">
+              <button type="button" class="pinpad-key" onclick="pressPinKey('1')">1</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('2')">2</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('3')">3</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('4')">4</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('5')">5</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('6')">6</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('7')">7</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('8')">8</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('9')">9</button>
+              <button type="button" class="pinpad-key" style="color:#f87171;" onclick="pressPinKey('CLR')">CLR</button>
+              <button type="button" class="pinpad-key" onclick="pressPinKey('0')">0</button>
+              <button type="button" class="pinpad-key" style="background:#059669; border-color:#10b981;" onclick="submitWebPosSale()">OK</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:flex; gap:10px;">
+          <button class="btn btn-emerald" style="flex:1; padding:12px; font-size:14px; font-weight:800;" onclick="submitWebPosSale()">
+            ✅ AUTORIZAR VENDA WEBPOS & IMPRIMIR CUPOM (ENTER)
+          </button>
+        </div>
+      </div>
+
+      <!-- MODE 2: [F4] RECEBER FATURA NO CAIXA -->
+      <div class="pos-panel webpos-mode-box" id="mode-invoice" style="display:none;">
+        <div class="pos-panel-title">
+          <span>💸 [F4] Recebimento de Fatura na Gaveta do Caixa (Libera Limite na Hora!)</span>
+          <span class="badge badge-paid">Baixa Online Instantânea</span>
+        </div>
+        <div class="pos-panel-sub">
+          Receba o pagamento da fatura do cliente no balcão/caixa em Dinheiro, PIX PDV ou Débito para desbloquear o cartão imediatamente.
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:12px; margin-bottom:14px;">
+          <div>
+            <label class="dark-label">Selecionar Fatura Aberta / Vencida</label>
+            <select id="wp-inv-select" class="dark-input" onchange="updateWebPosInvoicePreview()"></select>
+          </div>
+          <div>
+            <label class="dark-label">Meio de Pagamento Recebido no Caixa</label>
+            <select id="wp-inv-method" class="dark-input">
+              <option value="Dinheiro no Caixa (Espécie)">💵 Dinheiro no Caixa (Espécie na Gaveta)</option>
+              <option value="PIX QR Code no PDV">⚡ PIX QR Code no PDV</option>
+              <option value="Cartão de Débito TEF">💳 Cartão de Débito no Caixa</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
+          <div>
+            <label class="dark-label">Modalidade de Baixa</label>
+            <select id="wp-inv-type" class="dark-input" onchange="updateWebPosInvoicePreview()">
+              <option value="total">✔ Quitação Total da Fatura (Libera 100% do valor)</option>
+              <option value="minimo">🛡️ Pagamento Mínimo 15% (Desbloqueia Cartão + Rotativo)</option>
+            </select>
+          </div>
+          <div>
+            <label class="dark-label">Valor a Receber no Caixa (R$)</label>
+            <input type="number" id="wp-inv-amount" class="dark-input" step="0.01" />
+          </div>
+        </div>
+
+        <div id="wp-inv-details" style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; margin-bottom:14px; font-size:12.5px;"></div>
+
+        <button class="btn btn-emerald" style="width:100%; padding:12px; font-size:14px; font-weight:800;" onclick="submitWebPosInvoicePayment()">
+          💸 CONFIRMAR RECEBIMENTO NO CAIXA, LIBERAR LIMITE & IMPRIMIR RECIBO
+        </button>
+      </div>
+
+      <!-- MODE 3: [F6] CONSULTA SALDO, EXTRATO & AUMENTO EXPRESS -->
+      <div class="pos-panel webpos-mode-box" id="mode-consult" style="display:none;">
+        <div class="pos-panel-title">
+          <span>📈 [F6] Serviços de Balcão: Extrato na Bobina, Aumento Express de Limite & 2ª Via Voucher</span>
+          <span class="badge badge-agreement">Atendimento Rápido</span>
+        </div>
+        <div class="pos-panel-sub">
+          Imprima o extrato simplificado do portador na bobina térmica ou aprove aumento imediato de limite para não perder vendas de maior valor.
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:16px;">
+            <div style="font-weight:800; font-size:14px; margin-bottom:6px;">🖨️ Extrato Simplificado & 2ª Via Voucher</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:14px;">
+              Gera na impressora térmica 80mm o demonstrativo de limite total, disponível, melhor dia de compra, código do Voucher e últimas compras NSU.
+            </p>
+            <button class="btn btn-primary" style="width:100%;" onclick="generateConsultReceipt()">
+              🖨️ Gerar Extrato de Saldo & Limite na Bobina
+            </button>
+          </div>
+
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:16px;">
+            <div style="font-weight:800; font-size:14px; margin-bottom:6px;">🚀 Aumento Express de Limite no Caixa</div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">
+              Cliente quer fazer uma compra maior que o limite disponível? Faça um upgrade imediato com base no Score Prime:
+            </p>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+              <select id="wp-boost-amount" class="dark-input">
+                <option value="300">+ R$ 300,00 de Limite Extra</option>
+                <option value="600" selected>+ R$ 600,00 de Limite Extra</option>
+                <option value="1200">+ R$ 1.200,00 de Limite Extra (VIP)</option>
+              </select>
+            </div>
+            <button class="btn btn-emerald" style="width:100%;" onclick="submitWebPosLimitBoost()">
+              ⚡ Aprovar Aumento de Limite Agora
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; background:#0f172a; border:1px solid #334155; border-radius:12px; padding:16px;">
+          <div style="font-weight:800; font-size:14px; margin-bottom:10px;">⚙️ Alteração Rápida de Balcão: Senha PIN, Vencimento (Melhor Dia) & Seguros</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1.2fr 1fr; gap:10px; align-items:end;">
+            <div>
+              <label class="dark-label">Nova Senha PIN (4 díg.)</label>
+              <input type="text" id="wp-edit-pin" maxlength="4" class="dark-input" style="font-family:monospace; font-weight:800; text-align:center;" />
+            </div>
+            <div>
+              <label class="dark-label">Dia de Vencimento</label>
+              <select id="wp-edit-dueday" class="dark-input">
+                <option value="5">Dia 05 (Corte 26)</option>
+                <option value="10">Dia 10 (Corte 01)</option>
+                <option value="15">Dia 15 (Corte 06)</option>
+                <option value="20">Dia 20 (Corte 11)</option>
+                <option value="25">Dia 25 (Corte 16)</option>
+              </select>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px; font-size:12px;">
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" id="wp-edit-seguro" /> 🛡️ Seguro Conta Protegida
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" id="wp-edit-sms" /> 📲 SMS Alerta Inteligente
+              </label>
+            </div>
+            <button class="btn btn-primary" onclick="submitWebPosHolderEdit()">
+              💾 Salvar & Imprimir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODE 4: [F8] ESTORNO / CANCELAMENTO DE NSU -->
+      <div class="pos-panel webpos-mode-box" id="mode-reverse" style="display:none;">
+        <div class="pos-panel-title">
+          <span>↩️ [F8] Estorno / Cancelamento de Venda WebPOS por NSU (Supervisor Fiscal)</span>
+          <span class="badge badge-overdue-critical">Estorno Online</span>
+        </div>
+        <div class="pos-panel-sub">
+          Cancele vendas aprovadas por erro de digitação ou desistência. O limite do cartão do cliente é devolvido no mesmo segundo.
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px; margin-bottom:12px;">
+          <div>
+            <label class="dark-label">Motivo do Cancelamento / Estorno no Caixa</label>
+            <input type="text" id="wp-reverse-reason" class="dark-input" value="Solicitação do cliente / ajuste de valor no caixa" />
+          </div>
+          <div>
+            <label class="dark-label">Supervisor Autorizador</label>
+            <input type="text" id="wp-reverse-sup" class="dark-input" value="Supervisor Fiscal - Carlos" />
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="pos-table">
+            <thead>
+              <tr>
+                <th>NSU / Data</th>
+                <th>Portador</th>
+                <th>Modalidade / Itens</th>
+                <th>Total c/ Encargos</th>
+                <th>Status</th>
+                <th>Ação Supervisor</th>
+              </tr>
+            </thead>
+            <tbody id="wp-reverse-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODE 5: [F9] FECHAMENTO DE CAIXA / BORDERÔ DIÁRIO -->
+      <div class="pos-panel webpos-mode-box" id="mode-closing" style="display:none;">
+        <div class="pos-panel-title">
+          <span>📊 [F9] Fechamento de Caixa / Borderô Diário do Terminal WebPOS</span>
+          <button class="btn btn-sm btn-primary" onclick="printClosingBatchReceipt()">🖨️ Imprimir Fita de Fechamento (Redução Z)</button>
+        </div>
+        <div class="pos-panel-sub">
+          Conferência de todas as vendas passadas no cartão da loja, faturas recebidas na gaveta e estornos realizados no turno.
+        </div>
+        <div id="wp-closing-summary"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: 80MM THERMAL PRINTER BOBINA -->
+    <div class="thermal-printer-wrap">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div>
+          <div style="font-weight:800; font-size:14px; color:#fff;">🖨️ Impressora Térmica 80mm (Bobina POS)</div>
+          <div style="font-size:11.5px; color:#94a3b8;">Comprovante TEF / Terminal WebPOS Prime</div>
+        </div>
+        <button class="btn btn-sm" style="background:#334155; color:#fff; font-size:11px;" onclick="toggleReceiptCopy()">
+          🔄 Alternar Via Loja / Cliente
+        </button>
+      </div>
+
+      <div id="thermal-receipt-paper" class="thermal-bobina"></div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:12px;">
+        <button class="btn btn-primary" onclick="window.print()">
+          🖨️ Imprimir Bobina 80mm
+        </button>
+        <button class="btn btn-emerald" onclick="sendReceiptWhatsApp()">
+          📲 Enviar Cupom no WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    let STATE = null;
+    let SELECTED_HOLDER_ID = null;
+    let LAST_RECEIPT = null;
+    let RECEIPT_COPY = 'VIA DO CLIENTE';
+
+    function formatBRL(val) {
+      return Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function showToast(msg) {
+      const c = document.getElementById('toast-container');
+      const d = document.createElement('div');
+      d.className = 'toast';
+      d.textContent = msg;
+      c.appendChild(d);
+      setTimeout(() => d.remove(), 3800);
+    }
+
+    async function loadWebPosState() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin_view') === '1') {
+        const backBtn = document.getElementById('webpos-admin-back-btn');
+        if (backBtn) backBtn.style.display = 'inline-flex';
+      }
+      const res = await fetch('/api/state');
+      STATE = await res.json();
+      if (!SELECTED_HOLDER_ID && STATE.leads.length > 0) {
+        const firstActive = STATE.leads.find(l => l.lead_stage === 'aprovado_sem_compra' || l.lead_stage === 'cartao_ativo') || STATE.leads[0];
+        SELECTED_HOLDER_ID = firstActive.id;
+      }
+      renderHolderSelect();
+      renderHolderVisor();
+      updateWebPosSalePreview();
+      populateInvoiceSelect();
+      renderReverseTable();
+      renderClosingSummary();
+      if (!LAST_RECEIPT) {
+        generateConsultReceipt(true);
+      }
+    }
+
+    function getSelectedHolder() {
+      if (!STATE) return null;
+      return STATE.leads.find(l => l.id === Number(SELECTED_HOLDER_ID)) || STATE.leads[0];
+    }
+
+    function filterWebPosHolders() {
+      const q = (document.getElementById('webpos-search').value || '').toLowerCase().trim();
+      renderHolderSelect(q);
+    }
+
+    function renderHolderSelect(query = '') {
+      const sel = document.getElementById('webpos-holder-select');
+      const filtered = STATE.leads.filter(l => {
+        if (!query) return true;
+        const hay = `${l.full_name} ${l.cpf} ${l.card_number_full} ${l.card_number_last4} ${l.voucher_code}`.toLowerCase();
+        return hay.includes(query);
+      });
+      if (filtered.length > 0 && !filtered.some(l => l.id === Number(SELECTED_HOLDER_ID))) {
+        SELECTED_HOLDER_ID = filtered[0].id;
+      }
+      sel.innerHTML = filtered.map(l => {
+        const statusIcon = l.lead_stage === 'bloqueado_atraso' ? '🔒 BLOQUEADO' : l.first_purchase_done === 0 ? '🎫 VOUCHER 1ª COMPRA' : '🟢 ATIVO';
+        return `<option value="${l.id}" ${l.id === Number(SELECTED_HOLDER_ID) ? 'selected' : ''}>
+          ${statusIcon} | ${l.full_name} — Final ${l.card_number_last4} (Disp: ${formatBRL(l.available_limit)})
+        </option>`;
+      }).join('');
+      renderHolderVisor();
+      updateWebPosSalePreview();
+    }
+
+    function onSelectWebPosHolder(id) {
+      SELECTED_HOLDER_ID = Number(id);
+      renderHolderVisor();
+      updateWebPosSalePreview();
+      populateInvoiceSelect();
+    }
+
+    function renderHolderVisor() {
+      const h = getSelectedHolder();
+      if (!h) return;
+      const isBlocked = h.lead_stage === 'bloqueado_atraso';
+      const isFirst = h.first_purchase_done === 0;
+      const badge = document.getElementById('visor-card-status-badge');
+      badge.className = `badge ${isBlocked ? 'badge-overdue-critical' : 'badge-paid'}`;
+      badge.textContent = isBlocked ? '🔒 BLOQUEADO ATRASO (D+5)' : isFirst ? '🎫 VOUCHER 1ª COMPRA ATIVO' : '🟢 CARTÃO LIBERADO NO CAIXA';
+
+      const pinInp = document.getElementById('wp-sale-pin');
+      if (pinInp) pinInp.value = h.card_pin || '1234';
+
+      const editPin = document.getElementById('wp-edit-pin');
+      if (editPin) editPin.value = h.card_pin || '1234';
+      const editDue = document.getElementById('wp-edit-dueday');
+      if (editDue) editDue.value = String(h.due_day || 10);
+      const editSeg = document.getElementById('wp-edit-seguro');
+      if (editSeg) editSeg.checked = Boolean(h.has_seguro_protegido);
+      const editSms = document.getElementById('wp-edit-sms');
+      if (editSms) editSms.checked = Boolean(h.has_sms_alerta);
+
+      const saqueLimit = Math.round(h.available_limit * 0.30);
+      document.getElementById('webpos-holder-visor').innerHTML = `
+        <div>
+          <div style="font-size:11px; color:#94a3b8; font-weight:700;">PORTADOR IDENTIFICADO NO TERMINAL</div>
+          <div style="font-size:17px; font-weight:800; color:#fff; margin-top:2px;">${h.full_name}</div>
+          <div style="font-size:12px; color:#cbd5e1; margin-top:2px;">
+            CPF: <strong>${h.cpf}</strong> • Score Prime: <strong>${h.credit_score} pts</strong> • 📸 ${h.biometria_status}
+          </div>
+          <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; font-size:11.5px; align-items:center;">
+            <span style="background:#1e293b; border:1px solid #475569; padding:3px 8px; border-radius:6px; font-family:monospace;">
+              💳 ${h.card_number_full}
+            </span>
+            <span style="background:#1e293b; border:1px solid #475569; padding:3px 8px; border-radius:6px; font-family:monospace; color:#fde047;">
+              🎫 Voucher: ${h.voucher_code}
+            </span>
+            <span style="background:#1e293b; border:1px solid #475569; padding:3px 8px; border-radius:6px; font-family:monospace; color:#6ee7b7;">
+              🔑 PIN: ${h.card_pin}
+            </span>
+            ${isBlocked ? `<button class="btn btn-sm btn-emerald" style="padding:3px 8px; font-size:11px;" onclick="unblockHolderAtPos(${h.id})">🔓 Desbloquear Cartão no Caixa</button>` : ''}
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:space-between; text-align:right; border-left:1px solid #334155; padding-left:14px;">
+          <div>
+            <div style="font-size:10.5px; color:#94a3b8; font-weight:700;">LIMITE DISPONÍVEL P/ COMPRAS</div>
+            <div style="font-size:22px; font-weight:900; color:${isBlocked ? '#f87171' : '#4ade80'};">
+              ${formatBRL(h.available_limit)}
+            </div>
+            <div style="font-size:11px; color:#cbd5e1;">
+              Limite Total: ${formatBRL(h.approved_limit)} • Saque Fácil Disp: ${formatBRL(saqueLimit)}
+            </div>
+          </div>
+          <div style="font-size:11px; color:#fb923c; font-weight:700; margin-top:6px;">
+            🛒 Melhor Dia de Compra: Dia ${h.best_purchase_day} (Venc. Dia ${h.due_day})
+          </div>
+        </div>
+      `;
+    }
+
+    async function unblockHolderAtPos(leadId) {
+      await fetch('/api/leads/stage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId, lead_stage: 'cartao_ativo' })
+      });
+      showToast('🔓 Cartão desbloqueado pelo Supervisor no terminal WebPOS!');
+      await loadWebPosState();
+    }
+
+    async function submitWebPosHolderEdit() {
+      const h = getSelectedHolder();
+      if (!h) return;
+      const payload = {
+        lead_id: h.id,
+        card_pin: document.getElementById('wp-edit-pin').value || h.card_pin,
+        due_day: parseInt(document.getElementById('wp-edit-dueday').value || h.due_day, 10),
+        has_seguro_protegido: document.getElementById('wp-edit-seguro').checked,
+        has_sms_alerta: document.getElementById('wp-edit-sms').checked
+      };
+      const res = await fetch('/api/leads/update-holder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast(`✅ Cadastro atualizado no balcão! Novo Melhor Dia: ${data.best_purchase_day} | PIN: ${data.card_pin}`);
+        await loadWebPosState();
+        generateConsultReceipt(true);
+      }
+    }
+
+    function switchWebPosMode(mode) {
+      document.querySelectorAll('.webpos-mode-box').forEach(el => el.style.display = 'none');
+      document.getElementById(`mode-${mode}`).style.display = 'block';
+      ['sale', 'invoice', 'consult', 'reverse', 'closing'].forEach(m => {
+        document.getElementById(`hk-${m}`).classList.toggle('active', m === mode);
+      });
+    }
+
+    function updateWebPosSalePreview() {
+      const h = getSelectedHolder();
+      if (!h || !STATE) return;
+      const mod = document.getElementById('wp-sale-modality').value;
+      const amount = parseFloat(document.getElementById('wp-sale-amount').value || 0);
+      const installments = parseInt(document.getElementById('wp-sale-installments').value || 1, 10);
+      const applyDisc = document.getElementById('wp-sale-first-discount').checked && h.first_purchase_done === 0;
+
+      const discPct = applyDisc ? Number(STATE.store.first_purchase_discount_pct || 10) : 0;
+      const netAmount = +(amount * (1 - discPct / 100)).toFixed(2);
+
+      let totalWithInterest = netAmount;
+      let interestRate = 0;
+      if (mod === 'crediario_com_juros' || mod === 'saque_facil') {
+        interestRate = Number(STATE.store.crediario_interest_pct || 4.99);
+        totalWithInterest = +(netAmount * Math.pow(1 + interestRate / 100, installments)).toFixed(2);
+      }
+      const instVal = +(totalWithInterest / Math.max(1, installments)).toFixed(2);
+
+      document.getElementById('wp-sale-simulation-box').innerHTML = `
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px;">
+          <span>Valor Bruto no Caixa:</span>
+          <strong>${formatBRL(amount)}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px; color:#4ade80;">
+          <span>Desconto 1ª Compra (${discPct}%):</span>
+          <strong>-${formatBRL(amount - netAmount)}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px; color:#fb923c;">
+          <span>Encargos Financeiros (${interestRate}% a.m.):</span>
+          <strong>+${formatBRL(totalWithInterest - netAmount)}</strong>
+        </div>
+        <div style="border-top:1px dashed #334155; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; font-weight:800;">PLANO NO CUPOM:</span>
+          <span style="font-size:17px; font-weight:900; color:#fff;">${installments}x de ${formatBRL(instVal)}</span>
+        </div>
+        <div style="font-size:11px; color:#94a3b8; text-align:right; margin-top:2px;">
+          Total Final: ${formatBRL(totalWithInterest)}
+        </div>
+      `;
+    }
+
+    function pressPinKey(k) {
+      const inp = document.getElementById('wp-sale-pin');
+      if (k === 'CLR') {
+        inp.value = '';
+      } else if (inp.value.length < 4) {
+        inp.value += k;
+      }
+    }
+
+    function autoFillHolderPin() {
+      const h = getSelectedHolder();
+      if (!h) return;
+      document.getElementById('wp-sale-pin').value = h.card_pin || '1234';
+      showToast(`🔑 PIN ${h.card_pin} preenchido automaticamente para teste!`);
+    }
+
+    async function submitWebPosSale() {
+      const h = getSelectedHolder();
+      if (!h) return;
+      const pin = document.getElementById('wp-sale-pin').value;
+      const payload = {
+        lead_id: h.id,
+        modality: document.getElementById('wp-sale-modality').value,
+        amount: parseFloat(document.getElementById('wp-sale-amount').value || 0),
+        installments: parseInt(document.getElementById('wp-sale-installments').value || 1, 10),
+        items_summary: document.getElementById('wp-sale-items').value,
+        due_date: document.getElementById('wp-sale-due').value,
+        cashier_name: document.getElementById('webpos-operator').value,
+        apply_first_discount: document.getElementById('wp-sale-first-discount').checked,
+        force_supervisor: Boolean(document.getElementById('wp-sale-force-sup')?.checked),
+        pin_code: pin
+      };
+
+      const res = await fetch('/api/pos-purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showToast(`⛔ ${data.error || 'Transação negada no WebPOS'}`);
+        return;
+      }
+
+      LAST_RECEIPT = data.receipt;
+      renderThermalReceipt(LAST_RECEIPT);
+      document.getElementById('wp-sale-pin').value = '';
+      showToast(`✅ Venda APROVADA! ${data.nsu_code} (${data.auth_code}) impressa na bobina!`);
+      await loadWebPosState();
+    }
+
+    function populateInvoiceSelect() {
+      if (!STATE) return;
+      const sel = document.getElementById('wp-inv-select');
+      const openSts = STATE.statements.filter(s => s.status !== 'paga');
+      const holderSts = openSts.filter(s => s.holder_id === Number(SELECTED_HOLDER_ID));
+      const list = holderSts.length > 0 ? holderSts : openSts;
+
+      sel.innerHTML = list.map(s => `
+        <option value="${s.id}">
+          ${s.statement_code} — ${s.client_name} (Final ${s.card_number_last4}) • Total: ${formatBRL(s.updated_amount)}
+        </option>
+      `).join('');
+      updateWebPosInvoicePreview();
+    }
+
+    function updateWebPosInvoicePreview() {
+      if (!STATE) return;
+      const stId = Number(document.getElementById('wp-inv-select').value);
+      const st = STATE.statements.find(s => s.id === stId);
+      const type = document.getElementById('wp-inv-type').value;
+      if (!st) return;
+
+      const val = type === 'minimo' ? st.minimum_payment : st.updated_amount;
+      document.getElementById('wp-inv-amount').value = val.toFixed(2);
+      document.getElementById('wp-inv-details').innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Portador / Cartão:</span>
+          <strong>${st.client_name} (Final ${st.card_number_last4})</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Vencimento / Situação:</span>
+          <strong>${st.due_date} (${st.status_label})</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Valor Atualizado c/ Encargos:</span>
+          <strong>${formatBRL(st.updated_amount)} (Mínimo 15%: ${formatBRL(st.minimum_payment)})</strong>
+        </div>
+        <div style="color:#4ade80; font-weight:700; margin-top:6px;">
+          ⚡ Ao confirmar o recebimento na gaveta do caixa, o cartão é DESBLOQUEADO na mesma hora!
+        </div>
+      `;
+    }
+
+    async function submitWebPosInvoicePayment() {
+      const statement_id = Number(document.getElementById('wp-inv-select').value);
+      const payment_method = document.getElementById('wp-inv-method').value;
+      const payment_type = document.getElementById('wp-inv-type').value;
+      const paid_amount = parseFloat(document.getElementById('wp-inv-amount').value || 0);
+      const cashier_name = document.getElementById('webpos-operator').value;
+
+      const res = await fetch('/api/pos-pay-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statement_id, payment_method, payment_type, paid_amount, cashier_name })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showToast(`⛔ ${data.error || 'Erro ao receber fatura'}`);
+        return;
+      }
+
+      LAST_RECEIPT = data.receipt;
+      renderThermalReceipt(LAST_RECEIPT);
+      showToast(`💸 Fatura recebida no caixa (${data.rec_nsu})! Limite liberado na hora!`);
+      await loadWebPosState();
+    }
+
+    async function submitWebPosLimitBoost() {
+      const h = getSelectedHolder();
+      if (!h) return;
+      const boost_amount = parseFloat(document.getElementById('wp-boost-amount').value || 600);
+      const operator_name = document.getElementById('webpos-operator').value;
+
+      const res = await fetch('/api/pos-limit-boost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: h.id, boost_amount, operator_name })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast(`🚀 Limite aumentado para ${formatBRL(data.new_limit)} no WebPOS!`);
+        await loadWebPosState();
+        generateConsultReceipt();
+      }
+    }
+
+    function renderReverseTable() {
+      if (!STATE) return;
+      const tbody = document.getElementById('wp-reverse-tbody');
+      tbody.innerHTML = (STATE.pos_transactions || []).map(tx => `
+        <tr>
+          <td>
+            <div style="font-family:monospace; font-weight:800; color:#fb923c;">${tx.nsu_code}</div>
+            <div style="font-size:11px; color:#94a3b8;">${tx.created_at}</div>
+          </td>
+          <td>
+            <div style="font-weight:700;">${tx.client_name || 'Portador'}</div>
+            <div style="font-size:11px; color:#94a3b8;">Final ${tx.card_number_last4 || ''}</div>
+          </td>
+          <td>
+            <div style="font-weight:700;">${tx.modality}</div>
+            <div style="font-size:11px; color:#cbd5e1;">${tx.items_description}</div>
+          </td>
+          <td style="font-weight:800;">
+            ${formatBRL(tx.total_with_interest)}
+            <div style="font-size:11px; color:#94a3b8;">${tx.installments}x de ${formatBRL(tx.installment_amount)}</div>
+          </td>
+          <td>
+            <span class="badge ${tx.status === 'ESTORNADA' ? 'badge-overdue-critical' : 'badge-paid'}">
+              ${tx.status}
+            </span>
+          </td>
+          <td>
+            ${tx.status === 'APROVADA' ? `
+              <button class="btn btn-sm" style="background:#e11d48; color:#fff;" onclick="reverseWebPosTx(${tx.id})">
+                ↩️ Estornar NSU
+              </button>
+            ` : '<span style="font-size:11px; color:#94a3b8;">—</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function reverseWebPosTx(txId) {
+      const reason = document.getElementById('wp-reverse-reason').value;
+      const supervisor_name = document.getElementById('wp-reverse-sup').value;
+      const res = await fetch('/api/pos-reverse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tx_id: txId, reason, supervisor_name })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showToast(`⛔ ${data.error || 'Falha ao estornar NSU'}`);
+        return;
+      }
+      LAST_RECEIPT = data.receipt;
+      renderThermalReceipt(LAST_RECEIPT);
+      showToast(`↩️ Transação ${data.nsu_code} ESTORNADA e limite devolvido ao cartão!`);
+      await loadWebPosState();
+    }
+
+    function renderClosingSummary() {
+      if (!STATE) return;
+      const txs = STATE.pos_transactions || [];
+      const approvedSales = txs.filter(t => t.status === 'APROVADA');
+      const invoiceReceipts = txs.filter(t => t.status === 'RECEBIDA CAIXA');
+      const reversedTxs = txs.filter(t => t.status === 'ESTORNADA');
+
+      const sumSales = approvedSales.reduce((acc, t) => acc + Number(t.total_with_interest || 0), 0);
+      const sumInvoices = invoiceReceipts.reduce((acc, t) => acc + Number(t.total_with_interest || 0), 0);
+      const sumReversed = reversedTxs.reduce((acc, t) => acc + Number(t.total_with_interest || 0), 0);
+
+      document.getElementById('wp-closing-summary').innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:14px;">
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px;">
+            <div style="font-size:11px; color:#94a3b8;">VENDAS APROVADAS NO CARTÃO</div>
+            <div style="font-size:20px; font-weight:900; color:#4ade80; margin-top:4px;">${formatBRL(sumSales)}</div>
+            <div style="font-size:11px; color:#cbd5e1;">${approvedSales.length} cupons NSU ativos</div>
+          </div>
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px;">
+            <div style="font-size:11px; color:#94a3b8;">FATURAS RECEBIDAS NA GAVETA</div>
+            <div style="font-size:20px; font-weight:900; color:#38bdf8; margin-top:4px;">${formatBRL(sumInvoices)}</div>
+            <div style="font-size:11px; color:#cbd5e1;">${invoiceReceipts.length} baixas presenciais</div>
+          </div>
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px;">
+            <div style="font-size:11px; color:#94a3b8;">ESTORNOS / CANCELAMENTOS</div>
+            <div style="font-size:20px; font-weight:900; color:#f87171; margin-top:4px;">${formatBRL(sumReversed)}</div>
+            <div style="font-size:11px; color:#cbd5e1;">${reversedTxs.length} NSUs cancelados</div>
+          </div>
+        </div>
+        <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; font-size:12.5px;">
+          <strong>💰 Liquidação Previsto Lojista (Borderô Loja):</strong> Repasse líquido estimado de <strong>${formatBRL(sumSales * 0.975)}</strong> (após MDR interno de 2,5%) + <strong>${formatBRL(sumInvoices)}</strong> em numerário recebido nas gavetas de caixa.
+        </div>
+      `;
+    }
+
+    function generateConsultReceipt(silent = false) {
+      const h = getSelectedHolder();
+      if (!h || !STATE) return;
+      const store = STATE.store;
+      LAST_RECEIPT = {
+        type: 'EXTRATO_SALDO',
+        title: 'EXTRATO DE SALDO E LIMITE WEBPOS PRIME',
+        nsu_code: `CON-${Math.floor(100000 + Math.random() * 900000)}`,
+        auth_code: 'CONSULTA-OK',
+        terminal_id: 'WEBPOS-BALCAO-01',
+        store_name: store.store_name,
+        store_cnpj: store.cnpj,
+        card_brand: store.card_brand_name,
+        store_branch: h.store_branch,
+        cashier_name: document.getElementById('webpos-operator').value,
+        client_name: h.full_name,
+        cpf: h.cpf,
+        card_masked: `6060 8421 **** ${h.card_number_last4}`,
+        voucher_code: h.voucher_code,
+        modality: `STATUS: ${h.lead_stage.toUpperCase()}`,
+        items_summary: `Melhor Dia de Compra: Dia ${h.best_purchase_day} | Vencimento Fatura: Dia ${h.due_day}`,
+        gross_amount: h.approved_limit,
+        total_with_interest: h.used_limit,
+        installments: 1,
+        installment_val: h.available_limit,
+        new_available_limit: h.available_limit,
+        approved_limit: h.approved_limit,
+        created_at: '2026-10-14 ' + new Date().toTimeString().slice(0,5)
+      };
+      renderThermalReceipt(LAST_RECEIPT);
+      if (!silent) showToast('🖨️ Extrato de Saldo e Limite gerado na bobina 80mm!');
+    }
+
+    function printClosingBatchReceipt() {
+      if (!STATE) return;
+      const store = STATE.store;
+      const txs = STATE.pos_transactions || [];
+      const sumSales = txs.filter(t => t.status === 'APROVADA').reduce((a, t) => a + Number(t.total_with_interest || 0), 0);
+      const sumInv = txs.filter(t => t.status === 'RECEBIDA CAIXA').reduce((a, t) => a + Number(t.total_with_interest || 0), 0);
+
+      LAST_RECEIPT = {
+        type: 'FECHAMENTO_CAIXA',
+        title: 'REDUÇÃO Z / FECHAMENTO DE LOTE WEBPOS',
+        nsu_code: `LOTE-${Math.floor(1000 + Math.random() * 9000)}`,
+        auth_code: 'FECHAMENTO-OK',
+        terminal_id: 'WEBPOS-TERM-01',
+        store_name: store.store_name,
+        store_cnpj: store.cnpj,
+        card_brand: store.card_brand_name,
+        store_branch: 'Todas as Filiais / Turno Atual',
+        cashier_name: document.getElementById('webpos-operator').value,
+        client_name: 'FECHAMENTO DE TURNO CAIXA',
+        cpf: store.cnpj,
+        card_masked: 'BIN 6060 8421 (PRIVATE LABEL)',
+        modality: 'BORDERÔ DIÁRIO WEBPOS',
+        items_summary: `Vendas Cartão: ${formatBRL(sumSales)} | Faturas Recebidas Caixa: ${formatBRL(sumInv)}`,
+        gross_amount: sumSales,
+        total_with_interest: sumSales + sumInv,
+        installments: 1,
+        installment_val: sumSales + sumInv,
+        new_available_limit: sumSales * 0.975,
+        approved_limit: sumSales + sumInv,
+        created_at: '2026-10-14 ' + new Date().toTimeString().slice(0,5)
+      };
+      renderThermalReceipt(LAST_RECEIPT);
+      showToast('🖨️ Fita de Fechamento de Caixa gerada na bobina!');
+    }
+
+    function toggleReceiptCopy() {
+      RECEIPT_COPY = RECEIPT_COPY === 'VIA DO CLIENTE' ? 'VIA DO ESTABELECIMENTO (LOJA)' : 'VIA DO CLIENTE';
+      if (LAST_RECEIPT) renderThermalReceipt(LAST_RECEIPT);
+    }
+
+    function renderThermalReceipt(r) {
+      const paper = document.getElementById('thermal-receipt-paper');
+      paper.textContent = [
+        `========================================`,
+        `   ${(r.store_name || '').slice(0, 34).toUpperCase()}`,
+        `   CNPJ: ${r.store_cnpj || '24.890.100/0001-60'}`,
+        `   SISTEMA WEBPOS PRIME - ${r.card_brand || 'CARTÃO LOJA'}`,
+        `----------------------------------------`,
+        `   *** ${r.title} ***`,
+        `   [${RECEIPT_COPY}]`,
+        `----------------------------------------`,
+        `DATA/HORA : ${r.created_at}`,
+        `FILIAL    : ${r.store_branch}`,
+        `OPERADOR  : ${r.cashier_name}`,
+        `NSU       : ${r.nsu_code}   AUT: ${r.auth_code}`,
+        `----------------------------------------`,
+        `PORTADOR  : ${r.client_name}`,
+        `CPF       : ${r.cpf}`,
+        `CARTÃO    : ${r.card_masked}`,
+        r.voucher_code ? `VOUCHER   : ${r.voucher_code}` : null,
+        `----------------------------------------`,
+        `OPERAÇÃO  : ${r.modality}`,
+        `DESCRIÇÃO : ${r.items_summary}`,
+        r.discount_applied ? `DESCONTO  : 10% OFF 1ª COMPRA APLICADO!` : null,
+        `VALOR OP. : ${formatBRL(r.total_with_interest)}`,
+        `PLANO     : ${r.installments}x de ${formatBRL(r.installment_val)}`,
+        `----------------------------------------`,
+        `LIMITE TOTAL DO CARTÃO : ${formatBRL(r.approved_limit)}`,
+        `NOVO LIMITE DISPONÍVEL : ${formatBRL(r.new_available_limit)}`,
+        `----------------------------------------`,
+        `   TRANSAÇÃO AUTORIZADA COM SENHA PIN`,
+        `   ASSINATURA DIGITAL: ${r.nsu_code}-${r.auth_code}`,
+        `========================================`
+      ].filter(Boolean).join('\n');
+    }
+
+    function sendReceiptWhatsApp() {
+      const h = getSelectedHolder();
+      if (!h || !LAST_RECEIPT) return;
+      const text = document.getElementById('thermal-receipt-paper').textContent;
+      window.open(`https://wa.me/${h.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
+      showToast('📲 Comprovante WebPOS aberto no WhatsApp do cliente!');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'F2') { e.preventDefault(); switchWebPosMode('sale'); }
+      if (e.key === 'F4') { e.preventDefault(); switchWebPosMode('invoice'); }
+      if (e.key === 'F6') { e.preventDefault(); switchWebPosMode('consult'); }
+      if (e.key === 'F8') { e.preventDefault(); switchWebPosMode('reverse'); }
+      if (e.key === 'F9') { e.preventDefault(); switchWebPosMode('closing'); }
+    });
+
+    let WP_LAST_DB_VER = null;
+    let WP_LAST_CODE_VER = null;
+
+    async function pollWebPosLiveSync() {
+      try {
+        const res = await fetch('/api/sync-version');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.ok) return;
+        if (WP_LAST_CODE_VER && WP_LAST_CODE_VER !== data.code_version) {
+          window.location.reload();
+          return;
+        }
+        WP_LAST_CODE_VER = data.code_version;
+
+        if (WP_LAST_DB_VER && WP_LAST_DB_VER !== data.db_version) {
+          WP_LAST_DB_VER = data.db_version;
+          const activeEl = document.activeElement;
+          const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+          if (!isTyping) {
+            await loadWebPosState();
+          }
+        } else if (!WP_LAST_DB_VER) {
+          WP_LAST_DB_VER = data.db_version;
+        }
+      } catch (e) {}
+    }
+
+    function submitWebPosLogin() {
+      const op = document.getElementById('login-webpos-op').value;
+      document.getElementById('webpos-operator').value = op;
+      sessionStorage.setItem('prime_webpos_logged', '1');
+      document.getElementById('webpos-login-overlay').style.display = 'none';
+      showToast(`🔓 Turno iniciado — ${op}`);
+    }
+
+    function logoutWebPos() {
+      sessionStorage.removeItem('prime_webpos_logged');
+      document.getElementById('webpos-login-overlay').style.display = 'flex';
+      showToast('🔒 Turno de caixa bloqueado.');
+    }
+
+    async function naturalKeepAliveWebPos10Min() {
+      try {
+        const r = await fetch('/api/sync-version?keepalive=1&cycle=10min', { cache: 'no-store' });
+        if (r.ok) {
+          const d = await r.json();
+          if (d.external_links) {
+            Object.values(d.external_links).forEach(u => {
+              if (u && u.startsWith('https://')) {
+                fetch(`${u}/api/sync-version?keepalive=1`, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+              }
+            });
+          }
+        }
+        await loadWebPosState();
+      } catch (e) {}
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.search.includes('dual_preview=1') || sessionStorage.getItem('prime_webpos_logged') === '1') {
+        document.getElementById('webpos-login-overlay').style.display = 'none';
+      }
+      loadWebPosState();
+      setInterval(pollWebPosLiveSync, 2200);
+      setInterval(naturalKeepAliveWebPos10Min, 45000);
+      setInterval(naturalKeepAliveWebPos10Min, 600000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prime Card Enterprise — Console Master de Gestão de Cartão Próprio</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <!-- TELA DE LOGIN COM CPF E SENHA ANTES DO DASHBOARD -->
+  <div id="admin-login-overlay" style="position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 75% 15%, rgba(212,175,55,0.18) 0%, transparent 45%), radial-gradient(circle at 20% 85%, rgba(37,99,235,0.22) 0%, transparent 50%), linear-gradient(135deg, #04070d 0%, #0a1120 60%, #0f1b36 100%); display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="width:100%; max-width:430px; background:linear-gradient(180deg, #0f172a 0%, #090e1a 100%); border:1px solid rgba(212,175,55,0.45); border-radius:20px; padding:32px 28px; box-shadow:0 28px 80px rgba(0,0,0,0.8);">
+      <div style="text-align:center; margin-bottom:24px;">
+        <div style="width:62px; height:62px; border-radius:18px; margin:0 auto 12px; background:linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #9a7b1c 100%); color:#05080f; font-weight:900; font-size:22px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(212,175,55,0.35);">BP</div>
+        <div style="font-size:10.5px; font-weight:800; color:#d4af37; text-transform:uppercase; letter-spacing:1.4px; margin-bottom:4px;">https://admbompreco.com • Black & Gold</div>
+        <h2 style="font-size:21px; font-weight:900; color:#fff;">Console Master do Adm do Cartão</h2>
+        <p style="font-size:12.5px; color:#94a3b8; margin-top:4px;">Informe seu CPF e sua senha para acessar o Dashboard</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CPF de Acesso</label>
+        <input type="text" id="adm-login-user" class="input" placeholder="000.000.000-00" value="384.912.048-22" maxlength="14" style="font-size:15px; font-weight:800; letter-spacing:1px; padding:12px 14px;" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label class="form-label" style="margin-bottom:0;">Senha</label>
+          <span style="font-size:11px; color:#60a5fa; cursor:pointer; font-weight:700;" onclick="const p=document.getElementById('adm-login-pass'); p.type=p.type==='password'?'text':'password';">👁️ Mostrar/Ocultar</span>
+        </div>
+        <input type="password" id="adm-login-pass" class="input" placeholder="Digite sua senha" value="123456" onkeydown="if(event.key==='Enter') submitAdminLogin()" style="font-size:15px; font-weight:800; letter-spacing:2px; padding:12px 14px;" />
+      </div>
+
+      <button type="button" class="btn btn-primary" style="width:100%; padding:14px; font-size:14px; font-weight:900; margin-bottom:12px;" onclick="submitAdminLogin()">
+        ENTRAR NO DASHBOARD
+      </button>
+
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#94a3b8; padding-top:12px; border-top:1px solid rgba(212,175,55,0.16);">
+        <span>🔒 Acesso Seguro Criptografado</span>
+        <span style="color:#d4af37; font-weight:700;">Prime Card VIP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-box">
+      <div class="brand-logo" id="sidebar-brand-logo" style="background:linear-gradient(135deg, #f3e5ab 0%, #d4af37 55%, #9a7b1c 100%); color:#05080f;">BP</div>
+      <div>
+        <div class="brand-title" id="sidebar-card-name">BomPreço Prime Card</div>
+        <div class="brand-sub" id="sidebar-store-name">Private Label • Black & Gold</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Frente de Loja & PDV</div>
+    <ul class="nav-list">
+      <li>
+        <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+          <span class="nav-btn-left">📊 Painel Lojista & Hoje</span>
+          <span class="nav-badge danger" id="nav-overdue-count">3</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" data-tab="leads" onclick="switchTab('leads')">
+          <span class="nav-btn-left">🪪 Esteira Biometria & Vouchers</span>
+          <span class="nav-badge emerald" id="nav-leads-count">8</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" data-tab="pos" onclick="switchTab('pos')">
+          <span class="nav-btn-left">🖥️ WebPOS Prime & Promotores</span>
+          <span class="nav-badge" style="background:#d4af37;" id="nav-pos-count">5</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="nav-section-label">Financeiro & Cobrança</div>
+    <ul class="nav-list">
+      <li>
+        <button class="nav-btn" data-tab="statements" onclick="switchTab('statements')">
+          <span class="nav-btn-left">🧾 Faturas, Corte & Rotativo</span>
+          <span class="nav-badge" id="nav-statements-count">7</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" data-tab="rules" onclick="switchTab('rules')">
+          <span class="nav-btn-left">⚡ Régua (Melhor Dia + Cobrança)</span>
+          <span class="nav-badge" id="nav-rules-count">8</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" data-tab="simulator" onclick="switchTab('simulator')">
+          <span class="nav-btn-left">🤝 Parcelar Fatura & Super App</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="nav-section-label">Parametrização & Perfis</div>
+    <ul class="nav-list">
+      <li>
+        <button class="nav-btn" data-tab="environments" onclick="switchTab('environments')">
+          <span class="nav-btn-left">👁️ App Cliente vs. WebPOS</span>
+          <span class="nav-badge emerald">3 Perfis</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')">
+          <span class="nav-btn-left">⚙️ Tarifas, Seguros & Setup Loja</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-metric">Biometria Facial & Serasa: <strong>Ativo</strong></div>
+      <div class="sidebar-metric">Bloqueio PDV: <strong id="sidebar-block-days">D+5 de atraso</strong></div>
+      <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;" id="sidebar-rates-summary">
+        Anuidade: R$ 14,90 • Seguro: R$ 9,90 • Rotativo: 11,9%
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-area" id="app-main-area" style="display:none;">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="page-title">Console do Administrador do Cartão (Visão Master Completa)</h1>
+        <p id="page-subtitle">O Administrador enxerga e controla tudo: Esteira, Faturas, WebPOS da Loja e Super App do Cliente</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline" style="border-color:#2563eb; color:#6d28d9; font-weight:800;" onclick="switchTab('environments')">
+          👁️ Central dos 4 Sites (Perfis)
+        </button>
+        <a href="/cadastro?admin_view=1" class="btn btn-primary" style="font-weight:800;">🪪 Portal Colaborador (Cadastro)</a>
+        <a href="/webpos?admin_view=1" class="btn btn-outline" style="border-color:#f8fafc; background:#0f172a; color:#fff; font-weight:800;">🖥️ Terminal WebPOS (Caixa)</a>
+        <a href="/portal?id=1&admin_view=1" class="btn btn-outline" style="border-color:#d4af37; color:#c2410c;">📱 App do Cliente</a>
+        <button class="btn btn-outline" onclick="logoutAdminConsole()" title="Voltar para a tela de Login">🔒 Sair</button>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-section">
+        <div class="kpi-grid" id="dashboard-kpis"></div>
+
+        <div class="grid-2">
+          <!-- Priority Queue Today -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🔥 Fila Prioritária: Cobrança de Faturas & Desbloqueio de Limite no PDV</div>
+                <div class="card-subtitle">Pagando com PIX, o sistema recompõe o limite e libera o cartão na mesma hora no caixa da loja</div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-sm btn-emerald" onclick="dispatchPriorityBatch()">🚀 Disparar Régua em Lote</button>
+                <button class="btn btn-sm btn-outline" onclick="switchTab('statements')">Ver Faturas →</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Titular / Cartão BIN 6060</th>
+                    <th>Status no Caixa PDV</th>
+                    <th>Etapa Régua</th>
+                    <th>Total Atualizado</th>
+                    <th>Ação Rápida</th>
+                  </tr>
+                </thead>
+                <tbody id="priority-queue-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Aging List -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📈 Carteira de Faturas & Receitas Acessórias </div>
+                <div class="card-subtitle">Distribuição por vencimento + ganho mensal com Anuidade Faturada e Seguros</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="aging-list" id="aging-bars-container"></div>
+              <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--text-muted); font-weight:700;">RECEITA EXTRA MENSAL (ANUIDADE + SEGURO CONTA PROTEGIDA + SMS)</div>
+                  <div style="font-size:18px; font-weight:800; color:var(--emerald);" id="ancillary-revenue-total">R$ 0,00 / mês</div>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="switchTab('pos')">Ver Vendas PDV & Promotores →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📋 Log Operacional da Loja (Biometria, Autorizações NSU no Caixa, WhatsApp e Baixas PIX)</div>
+              <div class="card-subtitle">Monitoramento em tempo real de tudo que acontece nos caixas, totens e aplicativo</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data / Hora</th>
+                  <th>Cliente Portador</th>
+                  <th>Evento / Etapa</th>
+                  <th>Origem / Canal</th>
+                  <th>Detalhes da Operação</th>
+                  <th>Resultado</th>
+                </tr>
+              </thead>
+              <tbody id="logs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ESTEIRA DE PROPOSTAS, BIOMETRIA & VOUCHER 1ª COMPRA -->
+      <section id="tab-leads" class="tab-section" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <h2 style="font-size:16px; font-weight:800;">🪪 Esteira de Propostas Prime: Biometria Facial + Voucher de 1ª Compra Imediata</h2>
+            <p style="font-size:12.5px; color:var(--text-muted);">O cliente faz o cartão com a promotora, valida a selfie, recebe o Voucher Digital no celular e já compra na hora sem esperar o plástico!</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-emerald btn-sm" onclick="openPosPurchaseModal(null)">🛒 Passar Voucher / Cartão no Caixa</button>
+            <button class="btn btn-primary btn-sm" onclick="openNewLeadModal()">+ Nova Proposta c/ Biometria</button>
+          </div>
+        </div>
+
+        <!-- 4-Column Funnel -->
+        <div class="funnel-grid" id="leads-funnel-grid"></div>
+
+        <!-- Full Cardholders Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">💳 Base de Portadores, Vouchers de 1ª Compra, Melhor Dia de Compra & Seguros</div>
+              <div class="card-subtitle">Inclui numeração BIN 6060, status de Biometria Facial, dia de corte (Melhor Dia) e produtos aderidos</div>
+            </div>
+            <div style="width: 280px;">
+              <input type="text" id="lead-search" class="input" placeholder="Buscar por nome, CPF, voucher ou cartão..." oninput="renderLeadsTable()" />
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Titular / CPF / Biometria</th>
+                  <th>Filial & Promotor(a)</th>
+                  <th>Cartão BIN 6060 & Voucher</th>
+                  <th>Vencimento & Melhor Dia</th>
+                  <th>Seguro & Alertas</th>
+                  <th>Limite Disponível / Total</th>
+                  <th>Ações Rápidas</th>
+                </tr>
+              </thead>
+              <tbody id="leads-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: WEBPOS Prime (TERMINAL DE CAIXA, RECEBIMENTO DE FATURA, ESTORNO NSU & PROMOTORES) -->
+      <section id="tab-pos" class="tab-section" style="display:none;">
+        <!-- Borderô / KPIs do WebPOS -->
+        <div class="kpi-grid" id="webpos-kpis-grid" style="margin-bottom:18px;"></div>
+
+        <div class="grid-2">
+          <!-- Left: Central de Operações WebPOS Prime (Venda, Recebimento de Fatura na Gaveta e Aumento de Limite) -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🖥️ Central WebPOS Prime (Frente de Caixa & Balcão de Crediário)</div>
+                <div class="card-subtitle">Passe vendas c/ PIN Pad, receba faturas em dinheiro/PIX no caixa p/ liberar limite na hora ou abra a tela cheia c/ bobina 80mm</div>
+              </div>
+              <a href="/webpos" class="btn btn-sm btn-primary">🖥️ Abrir WebPOS Tela Cheia (80mm) →</a>
+            </div>
+            <div class="card-body">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:14px;">
+                <button class="btn btn-emerald" style="padding:11px; justify-content:center;" onclick="openPosPurchaseModal(null)">
+                  🛒 [F2] Passar Venda Cartão / Voucher
+                </button>
+                <a href="/webpos" class="btn btn-outline" style="padding:11px; justify-content:center; background:#0f172a; color:#fff; border-color:#f8fafc;">
+                  🖨️ [F6/F9] Terminal WebPOS + Bobina 80mm
+                </a>
+              </div>
+
+              <!-- Quick Cashier Invoice Payment Box (Recebimento de Fatura na Gaveta do Caixa) -->
+              <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:10px; padding:14px; margin-bottom:12px;">
+                <div style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:4px;">
+                  💸 [F4] Recebimento Rápido de Fatura no Caixa da Loja (Libera Limite na Hora!)
+                </div>
+                <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:10px;">
+                  Cliente foi até a loja pagar a fatura no balcão/caixa para liberar o cartão e já fazer nova compra:
+                </div>
+                <div style="display:grid; grid-template-columns: 1.4fr 1fr 0.8fr; gap:8px; margin-bottom:10px;">
+                  <select id="quick-pos-invoice-select" class="select" style="font-size:12px;"></select>
+                  <select id="quick-pos-invoice-method" class="select" style="font-size:12px;">
+                    <option value="Dinheiro no Caixa (Espécie)">💵 Dinheiro na Gaveta</option>
+                    <option value="PIX QR Code no PDV">⚡ PIX no PDV</option>
+                    <option value="Cartão de Débito TEF">💳 Débito no Caixa</option>
+                  </select>
+                  <select id="quick-pos-invoice-type" class="select" style="font-size:12px;">
+                    <option value="total">Total (100%)</option>
+                    <option value="minimo">Mínimo (15%)</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary btn-sm" style="width:100%;" onclick="submitQuickPosInvoicePayment()">
+                  💸 Confirmar Recebimento de Fatura no Caixa & Desbloquear Cartão Agora
+                </button>
+              </div>
+
+              <!-- Quick Limit Boost Box -->
+              <div style="background:rgba(37,99,235,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:12.5px; font-weight:800; color:#93c5fd;">📈 [F6] Aumento Express de Limite no Balcão WebPOS</div>
+                  <div style="font-size:11.5px; color:#cbd5e1;">Cliente quer comprar item de maior valor e faltou limite? Aprove +R$ 600 na hora pelo Score Birô:</div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <select id="quick-pos-boost-holder" class="select" style="font-size:12px; width:auto;"></select>
+                  <button class="btn btn-sm btn-emerald" onclick="submitQuickPosLimitBoost()">🚀 +R$ 600 Limite</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Ranking of Promoters & Cashiers -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🏆 Ranking de Promotores(as) & Operadores de Caixa (Comissões da Loja)</div>
+                <div class="card-subtitle">Meta de captação de cartões, ativação de 1ª compra no mesmo dia e venda de Seguro Conta Protegida</div>
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="openNewLeadModal()">+ Lançar Proposta de Promotor</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Promotor(a) / Operador(a)</th>
+                    <th>Loja / Filial</th>
+                    <th>Cartões Captados</th>
+                    <th>Ativados c/ 1ª Compra</th>
+                    <th>Seguros Vendidos</th>
+                    <th>Comissão Acumulada</th>
+                  </tr>
+                </thead>
+                <tbody id="promoters-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- POS Transactions History -->
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🧾 Extrato de Transações do WebPOS (Vendas NSU, Recebimentos de Fatura no Caixa e Estornos)</div>
+              <div class="card-subtitle">Auditoria em tempo real dos caixas com opção de Estorno / Cancelamento de NSU pelo Supervisor Fiscal</div>
+            </div>
+            <a href="/webpos" class="btn btn-sm btn-outline">🖨️ Imprimir Bobina 80mm no Terminal WebPOS →</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código NSU / Data</th>
+                  <th>Portador / Cartão</th>
+                  <th>Filial & Operador Caixa</th>
+                  <th>Modalidade WebPOS</th>
+                  <th>Descrição da Operação</th>
+                  <th>Valor Bruto</th>
+                  <th>Total c/ Juros (Parcelas)</th>
+                  <th>Status WebPOS</th>
+                  <th>Supervisor / Estorno</th>
+                </tr>
+              </thead>
+              <tbody id="pos-transactions-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: STATEMENTS (FATURAS MENSAIS, CORTE & ROTATIVO) -->
+      <section id="tab-statements" class="tab-section" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">🧾 Gestão de Faturas Mensais (Compras + Anuidade Faturada + Seguro Conta Protegida)</div>
+              <div class="card-subtitle">Composição completa igual à fatura Prime: data de corte, pagamento mínimo (15%), linha digitável e baixa PIX</div>
+            </div>
+            <button class="btn btn-emerald btn-sm" onclick="openPosPurchaseModal(null)">🛒 Nova Venda no Cartão</button>
+          </div>
+          <div class="card-body" style="padding-bottom: 8px;">
+            <div class="filter-bar">
+              <div class="filter-pills" id="statement-filter-pills">
+                <button class="filter-pill active" onclick="setStatementFilter('all')">Todas as Faturas</button>
+                <button class="filter-pill" onclick="setStatementFilter('overdue')">Vencidas / No Rotativo</button>
+                <button class="filter-pill" onclick="setStatementFilter('blocked')">Cartão Bloqueado (D+5)</button>
+                <button class="filter-pill" onclick="setStatementFilter('open')">Fechadas (Em Dia)</button>
+                <button class="filter-pill" onclick="setStatementFilter('paid')">Pagas / Parceladas</button>
+              </div>
+              <div style="width: 280px;">
+                <input type="text" id="statement-search" class="input" placeholder="Buscar titular, CPF ou fatura..." oninput="renderStatementsTable()" />
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fatura / Corte</th>
+                  <th>Titular do Cartão</th>
+                  <th>Composição (Compras + Anuidade/Seguro)</th>
+                  <th>Vencimento</th>
+                  <th>Status no PDV</th>
+                  <th>Valor Fatura (Mínimo)</th>
+                  <th>Juros Rotativo</th>
+                  <th>Total Atualizado</th>
+                  <th>Ações Rápidas</th>
+                </tr>
+              </thead>
+              <tbody id="statements-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: RULES (RÉGUA Prime: VOUCHER + MELHOR DIA + COBRANÇA) -->
+      <section id="tab-rules" class="tab-section" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">⚡ Régua Inteligente Prime (Voucher 1ª Compra + Melhor Dia de Compra + Cobrança D-5 a D+30)</div>
+              <div class="card-subtitle">Fideliza o cliente avisando quando a fatura fecha ("Melhor Dia") e recupera inadimplentes oferecendo desbloqueio imediato via PIX</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openRuleModal(null)">+ Nova Regra na Régua</button>
+          </div>
+          <div class="card-body">
+            <div style="background: var(--primary-soft); border: 1px solid #ddd6fe; border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; font-size: 12.5px; color: #4c1d95;">
+              💡 <strong>Variáveis Dinâmicas disponíveis:</strong>
+              <code>{{loja}}</code>, <code>{{nome_cartao}}</code>, <code>{{cliente}}</code>, <code>{{cpf}}</code>, <code>{{final_cartao}}</code>, <code>{{voucher}}</code>, <code>{{limite_aprovado}}</code>, <code>{{limite_disponivel}}</code>, <code>{{fatura}}</code>, <code>{{mes_ref}}</code>, <code>{{vencimento}}</code>, <code>{{pagamento_minimo}}</code>, <code>{{valor_original}}</code>, <code>{{valor_atualizado}}</code>, <code>{{chave_pix}}</code>, <code>{{link_portal}}</code>
+            </div>
+            <div class="timeline-grid" id="rules-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: SIMULATOR & SUPER APP PREVIEW -->
+      <section id="tab-simulator" class="tab-section" style="display:none;">
+        <div class="grid-2">
+          <!-- Left: Statement Installment Simulator -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🧮 Simulador de Parcelamento de Fatura & Acordo </div>
+                <div class="card-subtitle">Permita que o cliente parcele o saldo devedor com entrada no PIX e tenha o cartão desbloqueado na hora</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Selecione a Fatura do Cartão para Parcelar / Quitar</label>
+                <select id="sim-statement-select" class="select" onchange="updateSimulatorView()"></select>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label class="form-label">Desconto nos Juros do Rotativo (%)</label>
+                  <input type="range" id="sim-discount-range" min="0" max="100" step="5" value="85" oninput="updateSimulatorView()" style="width:100%;" />
+                  <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:var(--emerald); margin-top:4px;">
+                    <span>0%</span>
+                    <span id="sim-discount-label">85% OFF nos juros</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Plano de Parcelamento de Fatura</label>
+                  <select id="sim-installments" class="select" onchange="updateSimulatorView()">
+                    <option value="1">À Vista no PIX (Desbloqueia Cartão na Hora)</option>
+                    <option value="2">Entrada PIX + 1x Fixa (2x)</option>
+                    <option value="3">Entrada PIX + 2x Fixas (3x)</option>
+                    <option value="4">Entrada PIX + 3x Fixas (4x)</option>
+                    <option value="6">Entrada PIX + 5x Fixas (6x)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label class="form-label">% de Entrada via PIX p/ Desbloqueio</label>
+                  <select id="sim-downpayment-pct" class="select" onchange="updateSimulatorView()">
+                    <option value="25">25% de Entrada no PIX</option>
+                    <option value="33">33% de Entrada no PIX</option>
+                    <option value="50">50% de Entrada no PIX</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Vencimento da Entrada</label>
+                  <input type="date" id="sim-first-due" class="input" value="2026-10-16" onchange="updateSimulatorView()" />
+                </div>
+              </div>
+
+              <div id="sim-breakdown-box" style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-top: 8px;"></div>
+
+              <div style="display:flex; gap: 10px; margin-top: 16px; flex-wrap:wrap;">
+                <button class="btn btn-emerald" style="flex:1;" onclick="formalizeAgreement()">
+                  ✅ Formalizar Parcelamento & Liberar Cartão
+                </button>
+                <a id="sim-open-portal-btn" href="/portal?id=1" class="btn btn-primary">
+                  📱 Abrir Super App do Cliente →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live Preview of Virtual Store Card & Customer App -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📱 Preview do Cartão Virtual BIN 6060 & Super App Prime</div>
+                <div class="card-subtitle">Inclui numeração completa, CVV, Melhor Dia de Compra e botão para abrir o App do Cliente</div>
+              </div>
+            </div>
+            <div class="card-body" id="virtual-card-preview-box"></div>
+          </div>
+        </div>
+
+        <!-- Formalized Agreements List -->
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📑 Faturas Parceladas & Acordos Assinados no App / Balcão</div>
+              <div class="card-subtitle">Histórico de acordos com protocolo e assinatura eletrônica</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Protocolo</th>
+                  <th>Titular do Cartão / CPF</th>
+                  <th>Fatura Origem</th>
+                  <th>Valor c/ Rotativo</th>
+                  <th>Desconto Juros</th>
+                  <th>Valor Fechado</th>
+                  <th>Condição</th>
+                  <th>Assinatura Digital / Status</th>
+                </tr>
+              </thead>
+              <tbody id="agreements-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: STORE & Prime CARD TARIFFS + IMPLEMENTATION GUIDE -->
+      <section id="tab-settings" class="tab-section" style="display:none;">
+        <div class="grid-2">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🏪 Configuração da Loja & Tarifas do Cartão </div>
+                <div class="card-subtitle">Configure Anuidade Faturada, Seguro Conta Protegida, SMS e Juros do Rotativo</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label class="form-label">Nome da Rede / Loja Varejista</label>
+                  <input type="text" id="set-store-name" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nome Comercial do Cartão</label>
+                  <input type="text" id="set-card-name" class="input" />
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr 0.7fr; gap:12px;">
+                <div class="form-group">
+                  <label class="form-label">CNPJ da Loja</label>
+                  <input type="text" id="set-cnpj" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Chave PIX Recebimento</label>
+                  <input type="text" id="set-pix-key" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cor do Cartão</label>
+                  <input type="color" id="set-brand-color" class="input" style="height:40px; padding:4px;" />
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label class="form-label">Anuidade Faturada (R$)</label>
+                  <input type="number" step="0.10" id="set-anuidade" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Seguro Protegido (R$)</label>
+                  <input type="number" step="0.10" id="set-seguro" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">SMS Alerta (R$)</label>
+                  <input type="number" step="0.10" id="set-sms" class="input" />
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label class="form-label">Juros Rotativo (% a.m.)</label>
+                  <input type="number" step="0.1" id="set-rotativo-pct" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Crediário Cartão (% a.m.)</label>
+                  <input type="number" step="0.1" id="set-installment-pct" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Multa Atraso (%)</label>
+                  <input type="number" step="0.1" id="set-fine-pct" class="input" />
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label class="form-label">Score Mín. Aprovação</label>
+                  <input type="number" id="set-min-score" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Dias p/ Bloqueio PDV</label>
+                  <input type="number" id="set-block-days" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Desconto 1ª Compra (%)</label>
+                  <input type="number" step="0.5" id="set-discount-first" class="input" />
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label class="form-label">WhatsApp Central da Loja</label>
+                  <input type="text" id="set-support-wa" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Comissão Cartão Ativo (R$)</label>
+                  <input type="number" step="0.50" id="set-comissao-card" class="input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Comissão Seguro (R$)</label>
+                  <input type="number" step="0.50" id="set-comissao-seguro" class="input" />
+                </div>
+              </div>
+
+              <button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="saveStoreSettings()">
+                💾 Salvar Parâmetros da Operação Prime
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📋 Tudo que é Necessário para Rodar na Loja Física (Checklist Operacional)</div>
+                <div class="card-subtitle">Guia operacional, jurídico e tecnológico para implantar na loja</div>
+              </div>
+            </div>
+            <div class="card-body" style="font-size:12.5px; color:var(--text-secondary); display:flex; flex-direction:column; gap:12px;">
+              <div style="background:var(--bg-subtle); padding:11px 14px; border-radius:8px; border-left:4px solid #d4af37;">
+                <strong style="color:var(--text-main);">1. Estrutura Jurídica & Regulatória (SCD / BaaS White-Label):</strong><br/>
+                Para cobrar juros do rotativo/crediário (acima de 1% a.m.) e emitir CCB legalmente sem ser banco, você conecta este sistema via API a uma <strong>SCD / Emissora BaaS</strong> homologada no Banco Central (ex: <em>Celcoin, Dock, QiTech, BMP MoneyPlus ou Stark Bank</em>).
+              </div>
+              <div style="background:var(--bg-subtle); padding:11px 14px; border-radius:8px; border-left:4px solid #2563eb;">
+                <strong style="color:var(--text-main);">2. Motor de Crédito & Antifraude no Balcão (KYC):</strong><br/>
+                • <strong>Birô de Crédito:</strong> API Serasa Experian ou Boa Vista SCPC (custo médio R$ 0,80 a R$ 1,90 por CPF consultado).<br/>
+                • <strong>Biometria Facial (Prova de Vida):</strong> API Unico Check, Caf ou Serpro Datavalid pelo tablet/celular da promotora na loja.
+              </div>
+              <div style="background:var(--bg-subtle); padding:11px 14px; border-radius:8px; border-left:4px solid #059669;">
+                <strong style="color:var(--text-main);">3. Emissão na Hora (Voucher Digital vs. Impressora Térmica/Embossadora):</strong><br/>
+                • <strong>1ª Compra Imediata:</strong> O cliente aprovado recebe o <strong>Voucher QR Code + Senha</strong> no WhatsApp para passar no caixa em 30 segundos.<br/>
+                • <strong>Cartão Físico (Opcional):</strong> Impressora de cartão PVC (ex: <em>Evolis Primacy / Zebra ZC300</em>) no balcão de atendimento da loja.
+              </div>
+              <div style="background:var(--bg-subtle); padding:11px 14px; border-radius:8px; border-left:4px solid #2563eb;">
+                <strong style="color:var(--text-main);">4. Integração no Frente de Caixa (TEF / PDV):</strong><br/>
+                Os operadores de caixa usam a tela <strong>"🛒 Autorizador PDV"</strong> deste sistema (ou integração via API TEF SiTef / TOTVS) digitando o CPF/Cartão + Senha de 4 dígitos do cliente.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: CENTRAL DE AMBIENTES ISOLADOS (APP DO CLIENTE VS. WEBPOS DA LOJA) -->
+      <section id="tab-environments" class="tab-section" style="display:none;">
+        <!-- Explicação da Segregação de Perfis + Links Externos Diretos -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:18px;">
+          <div class="kpi-card" style="border-left:4px solid #2563eb;">
+            <div class="kpi-label">🪪 1. PORTAL DO COLABORADOR</div>
+            <div class="kpi-value" style="font-size:15px;">https://promotorbompreco.com</div>
+            <div style="margin:8px 0;">
+              <code id="ext-code-cadastro" style="font-size:11px; background:#080d18; color:#f3e5ab; padding:5px 8px; border-radius:6px; display:block; word-break:break-all; font-weight:800;">https://promotorbompreco.com</code>
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <a id="ext-btn-cadastro" href="/cadastro?admin_view=1" target="_blank" class="btn btn-sm btn-primary" style="flex:1; justify-content:center; background:#2563eb;">↗ promotorbompreco.com</a>
+              <button class="btn btn-sm btn-outline" onclick="copyExternalUrl(document.getElementById('ext-btn-cadastro').href, 'https://promotorbompreco.com')">📋</button>
+            </div>
+            <div class="kpi-sub">
+              <span>📸 <strong>Exclusivo Promotores:</strong> Cadastra cliente, valida biometria/birô e envia p/ Esteira de Crédito.</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="border-left:4px solid #d4af37;">
+            <div class="kpi-label">📱 2. SUPER APP DO CLIENTE</div>
+            <div class="kpi-value" style="font-size:15px;">https://appbompreco.com</div>
+            <div style="margin:8px 0;">
+              <code id="ext-code-cliente" style="font-size:11px; background:#080d18; color:#f3e5ab; padding:5px 8px; border-radius:6px; display:block; word-break:break-all; font-weight:800;">https://appbompreco.com</code>
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <a id="ext-btn-cliente" href="/portal" target="_blank" class="btn btn-sm btn-primary" style="flex:1; justify-content:center;">↗ appbompreco.com</a>
+              <button class="btn btn-sm btn-outline" onclick="copyExternalUrl(document.getElementById('ext-btn-cliente').href, 'https://appbompreco.com')">📋</button>
+            </div>
+            <div class="kpi-sub">
+              <span>🔒 <strong>Login Pessoal por CPF e Senha:</strong> Cada cliente acessa unicamente sua própria conta.</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="border-left:4px solid #0f172a;">
+            <div class="kpi-label">🖥️ 3. TERMINAL WEBPOS DA LOJA</div>
+            <div class="kpi-value" style="font-size:15px;">https://webposbompreco.com</div>
+            <div style="margin:8px 0;">
+              <code id="ext-code-webpos" style="font-size:11px; background:#080d18; color:#93c5fd; padding:5px 8px; border-radius:6px; display:block; word-break:break-all; font-weight:800;">https://webposbompreco.com</code>
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <a id="ext-btn-webpos" href="/webpos" target="_blank" class="btn btn-sm btn-outline" style="flex:1; justify-content:center; background:#0f172a; color:#fff; border-color:#f8fafc;">↗ webposbompreco.com</a>
+              <button class="btn btn-sm btn-outline" onclick="copyExternalUrl(document.getElementById('ext-btn-webpos').href, 'https://webposbompreco.com')">📋</button>
+            </div>
+            <div class="kpi-sub">
+              <span>🛒 <strong>Exclusivo Frente de Caixa:</strong> Vendas c/ PIN Pad, recebimento de fatura na gaveta e bobina 80mm.</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="border-left:4px solid #059669;">
+            <div class="kpi-label">🛡️ 4. CONSOLE MASTER DO ADM DO CARTÃO</div>
+            <div class="kpi-value" style="font-size:15px; color:var(--emerald);">https://admbompreco.com</div>
+            <div style="margin:8px 0;">
+              <code id="ext-code-admin" style="font-size:11px; background:#080d18; color:#6ee7b7; padding:5px 8px; border-radius:6px; display:block; word-break:break-all; font-weight:800;">https://admbompreco.com</code>
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <a id="ext-btn-admin" href="/" target="_blank" class="btn btn-sm btn-emerald" style="flex:1; justify-content:center;">↗ admbompreco.com</a>
+              <button class="btn btn-sm btn-outline" onclick="copyExternalUrl(document.getElementById('ext-btn-admin').href, 'https://admbompreco.com')">📋</button>
+            </div>
+            <div class="kpi-sub">
+              <span>🟢 <strong>Live Sync Automático (2s):</strong> Tudo que é alterado em qualquer site atualiza os demais automaticamente!</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">👁️ Auditoria Lado a Lado do Administrador: 📱 App do Cliente (Esquerda) vs. 🖥️ WebPOS da Loja (Direita)</div>
+              <div class="card-subtitle">Como Administrador do Cartão, você pode testar os dois sistemas separados simultaneamente. Faça uma venda ou receba uma fatura no WebPOS à direita e clique em "Sincronizar" para ver o reflexo imediato no celular do cliente à esquerda!</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-sm btn-emerald" onclick="reloadDualEnvironments()">🔄 Sincronizar / Atualizar as 2 Telas</button>
+              <a href="/portal?id=1" target="_blank" class="btn btn-sm btn-outline">📱 Abrir Só App Cliente (Puro) ↗</a>
+              <a href="/webpos" target="_blank" class="btn btn-sm btn-primary">🖥️ Abrir Só WebPOS (Puro) ↗</a>
+            </div>
+          </div>
+          <div class="card-body" style="padding:14px; background:#0f172a;">
+            <div style="display:grid; grid-template-columns: 440px 1fr; gap:16px; align-items:start;">
+              <!-- Left Iframe: Pure Customer App (Without Admin Banner) -->
+              <div style="background:#1e293b; border:2px solid #d4af37; border-radius:16px; overflow:hidden;">
+                <div style="background:#d4af37; color:#fff; padding:8px 14px; font-size:12px; font-weight:800; display:flex; justify-content:space-between; align-items:center;">
+                  <span>📱 VISÃO DO CLIENTE (SUPER APP ISOLADO)</span>
+                  <span style="background:rgba(0,0,0,0.25); padding:2px 8px; border-radius:99px; font-size:10.5px;">🚫 Sem acesso ao WebPOS</span>
+                </div>
+                <iframe id="iframe-client-app" src="/portal?id=1" style="width:100%; height:760px; border:none; background:#0f172a;"></iframe>
+              </div>
+
+              <!-- Right Iframe: Pure Store WebPOS Terminal -->
+              <div style="background:#1e293b; border:2px solid #38bdf8; border-radius:16px; overflow:hidden;">
+                <div style="background:#0284c7; color:#fff; padding:8px 14px; font-size:12px; font-weight:800; display:flex; justify-content:space-between; align-items:center;">
+                  <span>🖥️ VISÃO DO CAIXA DA LOJA (TERMINAL WEBPOS Prime + BOBINA 80MM)</span>
+                  <span style="background:rgba(0,0,0,0.25); padding:2px 8px; border-radius:99px; font-size:10.5px;">🔒 Exclusivo Operador PDV</span>
+                </div>
+                <iframe id="iframe-store-webpos" src="/webpos" style="width:100%; height:760px; border:none; background:#0f172a;"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL 1: NOVA PROPOSTA DE CARTÃO (ESTEIRA Prime C/ BIOMETRIA & SEGURO) -->
+  <div class="modal-backdrop" id="modal-new-lead">
+    <div class="modal-box" style="max-width: 640px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:16px; font-weight:800;">🪪 Esteira Prime: Nova Proposta de Cartão da Loja (Balcão / Promotora)</h3>
+          <p style="font-size:12px; color:var(--text-muted);">Consulta CPF no Birô, valida Biometria Facial, adiciona Seguro Conta Protegida e gera o Voucher de 1ª Compra</p>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('modal-new-lead')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Nome Completo do Cliente</label>
+            <input type="text" id="lead-name" class="input" placeholder="Ex: Fernanda Souza Lima" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPF</label>
+            <input type="text" id="lead-cpf" class="input" value="391.482.109-44" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">RG / CNH</label>
+            <input type="text" id="lead-rg" class="input" value="45.102.991-2 SSP/SP" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Nome da Mãe (KYC)</label>
+            <input type="text" id="lead-mother" class="input" value="Helena Souza Lima" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp (Token OTP)</label>
+            <input type="text" id="lead-wa" class="input" value="5511998761234" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Profissão / Ocupação</label>
+            <input type="text" id="lead-job" class="input" value="Comerciante / CLT" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Renda Mensal (R$)</label>
+            <input type="number" id="lead-income" class="input" value="3800" oninput="previewLeadCreditCalc()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Score Serasa/Birô</label>
+            <input type="number" id="lead-score" class="input" value="690" min="200" max="990" oninput="previewLeadCreditCalc()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dia Vencimento</label>
+            <select id="lead-dueday" class="select" onchange="previewLeadCreditCalc()">
+              <option value="5">Dia 05 (Corte 26)</option>
+              <option value="10" selected>Dia 10 (Corte 01)</option>
+              <option value="15">Dia 15 (Corte 06)</option>
+              <option value="20">Dia 20 (Corte 11)</option>
+              <option value="25">Dia 25 (Corte 16)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha Cartão (4 díg.)</label>
+            <input type="text" id="lead-pin" class="input" value="1234" maxlength="4" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Loja / Filial de Captação</label>
+            <select id="lead-branch" class="select">
+              <option value="Loja 01 - Matriz Centro">Loja 01 - Matriz Centro</option>
+              <option value="Loja 02 - Atacarejo Sul">Loja 02 - Atacarejo Sul</option>
+              <option value="Loja 03 - Shopping Norte">Loja 03 - Shopping Norte</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Promotor(a) / Operador(a) (Comissão)</label>
+            <select id="lead-seller" class="select">
+              <option value="Vanessa (Consultora Prime)">Vanessa (Consultora Prime)</option>
+              <option value="Rodrigo (Consultor Prime)">Rodrigo (Consultor Prime)</option>
+              <option value="Carla (Operadora Caixa 04)">Carla (Operadora Caixa 04)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background:#090e1a; border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:12px; display:flex; gap:18px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="lead-seguro" checked />
+            🛡️ Incluir Seguro Conta Protegida (+R$ 9,90/mês • Comissão R$ 3,50)
+          </label>
+          <label style="display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="lead-sms" checked />
+            📲 Incluir SMS Alertas Inteligentes (+R$ 5,90/mês)
+          </label>
+        </div>
+
+        <div id="lead-credit-preview" style="background:var(--primary-soft); border:1px solid #ddd6fe; border-radius:10px; padding:12px 16px; font-size:13px; color:#4c1d95;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-new-lead')">Cancelar</button>
+        <button class="btn btn-primary" onclick="submitNewLead()">📸 Validar Biometria & Emitir Cartão + Voucher</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: AUTORIZADOR DE VENDA PDV DA LOJA -->
+  <div class="modal-backdrop" id="modal-pos-purchase">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:16px; font-weight:800;">🛒 Terminal Autorizador PDV — Passar Compra no Cartão / Voucher</h3>
+          <p style="font-size:12px; color:var(--text-muted);">Valida limite disponível, aplica 10% OFF se for 1ª compra e gera NSU + Fatura Mensal</p>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('modal-pos-purchase')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Portador do Cartão / Código do Voucher de 1ª Compra</label>
+          <select id="pos-lead-select" class="select" onchange="onPosModalLeadChange()"></select>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.3fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Modalidade da Operação no Caixa</label>
+            <select id="pos-modality" class="select" onchange="updatePosModalPreview()">
+              <option value="rotativo_vista">🛒 Rotativo / Vista (Melhor Dia até 40d s/ juros)</option>
+              <option value="parcelado_sem_juros" selected>🛍️ Parcelado Loja Sem Juros (2x a 3x)</option>
+              <option value="crediario_com_juros">💳 Crediário no Cartão c/ Juros (4,99% a.m.)</option>
+              <option value="saque_facil">💵 Saque Fácil / Empréstimo no Caixa</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Operador(a) de Caixa</label>
+            <input type="text" id="pos-cashier" class="input" value="Caixa 01 - Frente de Loja" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descrição das Mercadorias / Cupom Fiscal</label>
+          <input type="text" id="pos-items" class="input" value="Compras Supermercado & Magazine (Cupom #8492)" />
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 0.8fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Valor da Venda (R$)</label>
+            <input type="number" step="0.01" id="pos-amount" class="input" value="450.00" oninput="updatePosModalPreview()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nº de Parcelas</label>
+            <select id="pos-installments" class="select" onchange="updatePosModalPreview()">
+              <option value="1">1x (Fatura Atual)</option>
+              <option value="2">2x</option>
+              <option value="3" selected>3x</option>
+              <option value="6">6x (c/ Juros)</option>
+              <option value="10">10x (c/ Juros)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vencimento Fatura</label>
+            <input type="date" id="pos-duedate" class="input" value="2026-10-20" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha (PIN)</label>
+            <input type="text" id="pos-pin" class="input" value="1234" maxlength="4" style="font-family:monospace; font-weight:800; text-align:center;" />
+          </div>
+        </div>
+
+        <div id="pos-modal-calc-preview" style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px; font-size:12.5px;"></div>
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary); cursor:pointer;">
+          <input type="checkbox" id="pos-force-supervisor" />
+          <span>🔓 <strong>Autorização Excepcional Supervisor Fiscal:</strong> permitir venda mesmo se cartão estiver c/ bloqueio de atraso</span>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-pos-purchase')">Cancelar</button>
+        <button class="btn btn-emerald" onclick="submitPosPurchase()">✅ Autorizar Venda (Gerar NSU & Fatura)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: COMPOSER DE WHATSAPP -->
+  <div class="modal-backdrop" id="modal-composer">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:16px; font-weight:800;">💬 Disparar Mensagem Oficial do Cartão no WhatsApp</h3>
+          <p style="font-size:12px; color:var(--text-muted);" id="composer-subtitle">Ativação de Voucher, Aviso de Melhor Dia de Compra ou Cobrança c/ PIX</p>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('modal-composer')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="comp-statement-id" />
+        <input type="hidden" id="comp-lead-id" />
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label">Regra / Campanha</label>
+            <select id="comp-stage" class="select" onchange="refreshComposerPreview()">
+              <option value="ATIVACAO">🎁 ATIVAÇÃO (Voucher 1ª Compra Imediata + 10% OFF)</option>
+              <option value="MELHOR-DIA">🛒 MELHOR DIA DE COMPRA (Fatura Fechou Hoje!)</option>
+              <option value="D-5">📄 D-5 (Envio de Fatura Fechada + PIX)</option>
+              <option value="D0">⏰ D0 (Vence Hoje + Liberação de Limite)</option>
+              <option value="D+3">⚠️ D+3 (Aviso Pós-Vencimento)</option>
+              <option value="D+5">🔒 D+5 (Bloqueio Preventivo PDV + PIX Libera na Hora)</option>
+              <option value="D+15">🤝 D+15 (Campanha Parcelamento de Fatura até 6x)</option>
+              <option value="D+30">🚨 D+30 (Aviso Pré-Negativação SCPC/Serasa)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Canal de Disparo</label>
+            <select id="comp-channel" class="select">
+              <option value="WhatsApp Oficial">WhatsApp Oficial da Loja</option>
+              <option value="WhatsApp + SMS Push">WhatsApp + SMS Push</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Título / Notificação Push</label>
+          <input type="text" id="comp-subject" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mensagem no WhatsApp do Portador (Editável)</label>
+          <div class="whatsapp-preview">
+            <textarea id="comp-body" class="textarea" rows="8" style="background:#d9fdd3; border:none; font-size:13px;"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="copyComposerText()">📋 Copiar Texto</button>
+        <a id="comp-wa-link" href="#" target="_blank" class="btn btn-outline" style="border-color:#10b981; color:#047857;">📲 Abrir no WhatsApp</a>
+        <button class="btn btn-primary" onclick="confirmSendCollection()">✅ Disparar & Registrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: REGISTRAR PROMESSA DE PAGAMENTO -->
+  <div class="modal-backdrop" id="modal-promise">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-size:16px; font-weight:700;">📅 Registrar Promessa de Pagamento</h3>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('modal-promise')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="prom-statement-id" />
+        <div class="form-group">
+          <label class="form-label">Data Prometida pelo Titular</label>
+          <input type="date" id="prom-date" class="input" value="2026-10-18" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Anotação do Acordo Verbal</label>
+          <textarea id="prom-note" class="textarea" rows="3" placeholder="Ex: Cliente recebe dia 18 e vai pagar via PIX para fazer a compra do mês na loja."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-promise')">Cancelar</button>
+        <button class="btn btn-primary" onclick="savePromise()">Salvar Promessa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: EDITAR REGRA DA RÉGUA -->
+  <div class="modal-backdrop" id="modal-rule">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 style="font-size:16px; font-weight:700;" id="rule-modal-title">⚡ Configurar Regra da Régua Prime</h3>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('modal-rule')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rule-id" />
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Código (Ex: D+5)</label>
+            <input type="text" id="rule-code" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dias ref. Vencimento</label>
+            <input type="number" id="rule-offset" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Canal</label>
+            <select id="rule-channel" class="select">
+              <option value="WhatsApp Oficial">WhatsApp Oficial</option>
+              <option value="WhatsApp + SMS">WhatsApp + SMS</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Título da Etapa</label>
+            <input type="text" id="rule-title" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tom</label>
+            <select id="rule-tone" class="select">
+              <option value="amigavel">Amigável / Relacionamento</option>
+              <option value="firme">Firme / Bloqueio PDV</option>
+              <option value="extrajudicial">Pré-Negativação SCPC</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Título / Assunto</label>
+          <input type="text" id="rule-subject" class="input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Template da Mensagem</label>
+          <textarea id="rule-message" class="textarea" rows="6"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-rule')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveRule()">Salvar Regra</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: EDITAR PORTADOR, LIMITE, VENCIMENTO, PIN & SEGUROS -->
+  <div class="modal-backdrop" id="modal-edit-holder">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:16px; font-weight:800;">✏️ Editar Portador, Limite de Crédito, Vencimento, PIN & Seguros</h3>
+          <p style="font-size:12px; color:var(--text-muted);">Altere qualquer dado cadastral, limite aprovado, dia de corte, senha de 4 dígitos ou bloqueio</p>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('modal-edit-holder')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-holder-id" />
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" id="edit-holder-name" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPF</label>
+            <input type="text" id="edit-holder-cpf" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp</label>
+            <input type="text" id="edit-holder-wa" class="input" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Limite Total (R$)</label>
+            <input type="number" step="50" id="edit-holder-limit" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dia Vencimento</label>
+            <select id="edit-holder-dueday" class="select">
+              <option value="5">Dia 05 (Melhor Dia 26)</option>
+              <option value="10">Dia 10 (Melhor Dia 01)</option>
+              <option value="15">Dia 15 (Melhor Dia 06)</option>
+              <option value="20">Dia 20 (Melhor Dia 11)</option>
+              <option value="25">Dia 25 (Melhor Dia 16)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha PIN (4 díg.)</label>
+            <input type="text" id="edit-holder-pin" maxlength="4" class="input" style="font-family:monospace; font-weight:800; text-align:center;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Score Birô</label>
+            <input type="number" id="edit-holder-score" class="input" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Status do Cartão no PDV</label>
+            <select id="edit-holder-stage" class="select">
+              <option value="aprovado_sem_compra">🎫 Voucher 1ª Compra Ativo</option>
+              <option value="cartao_ativo">🟢 Cartão Ativo (Liberado)</option>
+              <option value="bloqueado_atraso">🔒 Bloqueado Atraso (D+5)</option>
+              <option value="mesa_credito">🔎 Em Análise na Mesa</option>
+              <option value="recusado">❌ Recusado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Filial de Origem</label>
+            <input type="text" id="edit-holder-branch" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Promotor(a)</label>
+            <input type="text" id="edit-holder-promoter" class="input" />
+          </div>
+        </div>
+
+        <div style="background:#090e1a; border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; gap:18px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="edit-holder-seguro" />
+            🛡️ Seguro Conta Protegida Ativo (+R$ 9,90/mês)
+          </label>
+          <label style="display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" id="edit-holder-sms" />
+            📲 SMS Alertas Ativo (+R$ 5,90/mês)
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-edit-holder')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveHolderEdits()">💾 Salvar Alterações do Portador</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

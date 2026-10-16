@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Super App Prime Card — Login & Área do Cliente</title>
+  <style>
+    :root {
+      --bg-obsidian: #05080f;
+      --bg-surface: #0c1322;
+      --bg-elevated: #131e35;
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-dark: #9a7b1c;
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --blue-deep: #172554;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-sub: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-gold: rgba(212, 175, 55, 0.26);
+      --border-blue: rgba(59, 130, 246, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #132347 0%, #070b14 50%, #04060b 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 40px;
+    }
+
+    /* Top Minimal Bar */
+    .top-bar {
+      width: 100%;
+      background: rgba(5, 8, 15, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-gold);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+    }
+
+    .top-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .top-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #9a7b1c 100%);
+      color: #05080f;
+      font-weight: 900;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(212, 175, 55, 0.35);
+    }
+
+    .holder-select {
+      background: #0c1424;
+      color: var(--gold-light);
+      border: 1px solid var(--border-gold);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Mobile App Frame */
+    .phone-shell {
+      width: 100%;
+      max-width: 440px;
+      background: #080d18;
+      min-height: calc(100vh - 56px);
+      border-left: 1px solid rgba(212, 175, 55, 0.16);
+      border-right: 1px solid rgba(212, 175, 55, 0.16);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 84px;
+    }
+
+    /* ==========================================
+       LOGIN SCREEN (PRE-DASHBOARD AUTHENTICATION)
+       ========================================== */
+    .login-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px 22px 28px;
+      min-height: calc(100vh - 60px);
+      background:
+        radial-gradient(circle at 80% 10%, rgba(212, 175, 55, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 20% 85%, rgba(37, 99, 235, 0.22) 0%, transparent 50%),
+        linear-gradient(180deg, #070b14 0%, #091122 100%);
+    }
+
+    .login-hero {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .login-emblem {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      margin: 0 auto 12px;
+      background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #9a7b1c 100%);
+      color: #05080f;
+      font-weight: 900;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 28px rgba(212, 175, 55, 0.35);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .login-card-box {
+      background: rgba(12, 19, 34, 0.92);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      padding: 20px 18px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+      margin-bottom: 16px;
+    }
+
+    .pin-dots-row {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin: 12px 0 14px;
+    }
+
+    .pin-dot {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      background: transparent;
+      transition: all 0.15s ease;
+    }
+
+    .pin-dot.filled {
+      background: var(--gold-light);
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+      transform: scale(1.1);
+    }
+
+    .login-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .key-btn {
+      background: linear-gradient(180deg, #131e36 0%, #0b1222 100%);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: var(--gold-light);
+      font-size: 17px;
+      font-weight: 800;
+      padding: 11px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+
+    .key-btn:hover, .key-btn:active {
+      border-color: var(--gold);
+      background: rgba(212, 175, 55, 0.16);
+      transform: translateY(-1px);
+    }
+
+    /* App Header */
+    .app-header {
+      background: linear-gradient(180deg, #0f1b36 0%, #080d18 100%);
+      padding: 20px 20px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-greeting {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4af37 0%, #8a6d1b 100%);
+      color: #05080f;
+      font-weight: 900;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--gold-light);
+    }
+
+    /* Luxury 3D Metallic Credit Card */
+    .card-wrapper {
+      padding: 0 20px;
+      margin-bottom: 16px;
+    }
+
+    .prime-card {
+      background:
+        radial-gradient(circle at 85% 20%, rgba(212, 175, 55, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(37, 99, 235, 0.32) 0%, transparent 50%),
+        linear-gradient(135deg, #05070c 0%, #0f172a 55%, #172554 100%);
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(243, 229, 171, 0.3);
+    }
+
+    .prime-card.blocked {
+      background: linear-gradient(135deg, #1f0812 0%, #3b0a1e 60%, #0f172a 100%);
+      border-color: rgba(244, 63, 94, 0.55);
+    }
+
+    .card-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-brand-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--gold-light);
+      letter-spacing: 0.4px;
+    }
+
+    .card-brand-sub {
+      font-size: 9.5px;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      font-weight: 700;
+    }
+
+    .card-status-pill {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: rgba(212, 175, 55, 0.18);
+      color: var(--gold-light);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+    }
+
+    .card-chip-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 0 14px;
+    }
+
+    .gold-chip {
+      width: 42px;
+      height: 30px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #9a7b1c 100%);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      position: relative;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.35);
+    }
+
+    .card-number-display {
+      font-family: "Courier New", monospace;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 2.4px;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      margin-bottom: 14px;
+    }
+
+    .card-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-size: 11px;
+      color: #cbd5e1;
+      border-top: 1px solid rgba(212, 175, 55, 0.18);
+      padding-top: 10px;
+    }
+
+    /* Quick Action Dock */
+    .quick-dock {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 0 20px;
+      margin-bottom: 18px;
+    }
+
+    .dock-btn {
+      background: linear-gradient(180deg, #111c33 0%, #0b1222 100%);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: 14px;
+      padding: 11px 4px;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .dock-btn:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+      background: #152342;
+    }
+
+    .dock-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(212, 175, 55, 0.14);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .dock-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-align: center;
+    }
+
+    /* Promotional Banners Carousel */
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--gold-light);
+    }
+
+    .banner-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .banner-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .banner-dot.active {
+      width: 20px;
+      background: var(--gold);
+    }
+
+    .promo-banner {
+      border-radius: 16px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      min-height: 128px;
+    }
+
+    .promo-banner.active {
+      display: flex;
+    }
+
+    .promo-banner.theme-gold {
+      background: linear-gradient(135deg, #0b111e 0%, #1e293b 45%, #785a12 100%);
+    }
+
+    .promo-banner.theme-blue {
+      background: linear-gradient(135deg, #091326 0%, #1e3a8a 60%, #172554 100%);
+      border-color: rgba(96, 165, 250, 0.45);
+    }
+
+    .promo-banner.theme-midnight {
+      background: linear-gradient(135deg, #090d16 0%, #172554 50%, #9a7b1c 100%);
+    }
+
+    .promo-tag {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: rgba(212, 175, 55, 0.22);
+      color: var(--gold-light);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      margin-bottom: 6px;
+    }
+
+    .promo-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-bottom: 5px;
+    }
+
+    .promo-desc {
+      font-size: 11.5px;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+    }
+
+    .promo-cta {
+      background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 100%);
+      color: #05080f;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    /* Content Cards */
+    .app-section {
+      padding: 0 20px;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .app-section.active {
+      display: flex;
+    }
+
+    .surface-card {
+      background: linear-gradient(180deg, #0f172a 0%, #0b111e 100%);
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .mini-perks-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .perk-card {
+      background: linear-gradient(160deg, #111c35 0%, #0a101d 100%);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      border-radius: 14px;
+      padding: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .perk-card:hover {
+      border-color: var(--gold);
+    }
+
+    .btn-gold {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #e5c158 0%, #d4af37 55%, #b8860b 100%);
+      color: #05080f;
+      font-weight: 900;
+      font-size: 13.5px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.32);
+      transition: all 0.16s ease;
+    }
+
+    .btn-gold:hover {
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+    }
+
+    .btn-blue {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--gold-light);
+      border: 1px solid var(--border-gold);
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .app-input, .app-select {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 10px;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      background: #060a12;
+      color: #f8fafc;
+      font-size: 13.5px;
+    }
+
+    .app-input:focus, .app-select:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.16);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 440px;
+      background: rgba(8, 13, 24, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-gold);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 10px 12px;
+      z-index: 50;
+    }
+
+    .bnav-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .bnav-btn.active {
+      color: var(--gold-light);
+    }
+
+    .tx-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .tx-row:last-child {
+      border-bottom: none;
+    }
+
+    .toast-app {
+      position: fixed;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0c1424;
+      color: var(--gold-light);
+      padding: 11px 18px;
+      border-radius: 99px;
+      font-size: 12.5px;
+      font-weight: 800;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.65);
+      border: 1px solid var(--gold);
+      z-index: 200;
+      display: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-brand">
+      <div class="top-logo">BP</div>
+      <div>
+        <div style="font-size:13px; font-weight:800; color:var(--gold-light);">Super App Prime Card</div>
+        <div style="font-size:10px; color:#94a3b8;">Ambiente Exclusivo do Cliente • Black & Gold</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <span id="top-logged-cpf" style="display:none; font-size:11.5px; color:var(--gold-light); font-weight:700; background:#0c1424; padding:5px 10px; border-radius:7px; border:1px solid var(--border-gold);"></span>
+      <button id="btn-logout-top" class="btn-ghost" style="display:none; padding:5px 10px;" onclick="logoutApp()">🚪 Sair</button>
+      <a id="admin-back-link" href="/" style="display:none; color:#93c5fd; font-size:11.5px; font-weight:700; text-decoration:none; padding:5px 10px; border:1px solid rgba(59,130,246,0.35); border-radius:7px;">🛡️ Console Adm</a>
+    </div>
+  </div>
+
+  <div id="app-toast" class="toast-app"></div>
+
+  <!-- Smartphone Container -->
+  <div class="phone-shell">
+
+    <!-- ==========================================================
+         PARTE 1: TELA DE LOGIN COM CPF E SENHA (ANTES DO DASHBOARD)
+         ========================================================== -->
+    <div id="login-screen" class="login-screen">
+
+      <div>
+        <div class="login-hero" style="margin-top:16px; margin-bottom:26px;">
+          <div class="login-emblem">BP</div>
+          <div style="font-size:10.5px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:1.6px; margin-bottom:6px;">
+            Private Label • Black & Gold
+          </div>
+          <h1 style="font-size:23px; font-weight:900; color:#ffffff; letter-spacing:-0.4px;" id="login-brand-title">
+            BomPreço Prime Card
+          </h1>
+          <p style="font-size:12.5px; color:#94a3b8; margin-top:6px;">
+            Digite seu CPF e sua senha para entrar no aplicativo
+          </p>
+        </div>
+
+        <!-- Card Limpo de Login com CPF e Senha -->
+        <div class="login-card-box" style="padding:24px 20px;">
+
+          <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:11.5px; font-weight:800; color:var(--gold-light); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:7px;">
+              CPF do Titular
+            </label>
+            <input
+              type="text"
+              id="login-cpf-input"
+              class="app-input"
+              placeholder="000.000.000-00"
+              maxlength="14"
+              oninput="maskLoginCpf(this)"
+              style="font-size:15px; font-weight:800; letter-spacing:1px; padding:13px 14px;"
+            />
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:7px;">
+              <label style="font-size:11.5px; font-weight:800; color:var(--gold-light); text-transform:uppercase; letter-spacing:0.6px;">
+                Senha do Aplicativo / Cartão
+              </label>
+              <span style="font-size:11px; color:#60a5fa; cursor:pointer; font-weight:700;" onclick="toggleLoginPasswordVisibility()" id="btn-toggle-pass">👁️ Mostrar</span>
+            </div>
+            <input
+              type="password"
+              id="login-pin-input"
+              class="app-input"
+              placeholder="Digite sua senha"
+              onkeydown="if(event.key==='Enter') submitCustomerLogin()"
+              style="font-size:15px; font-weight:800; letter-spacing:3px; padding:13px 14px;"
+            />
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#94a3b8; margin-bottom:20px;">
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+              <input type="checkbox" checked style="width:15px; height:15px; accent-color:#d4af37;" />
+              <span>Lembrar meu CPF</span>
+            </label>
+            <span style="cursor:pointer; color:var(--gold-light); font-weight:700;" onclick="recoverPinPrompt()">Esqueci minha senha</span>
+          </div>
+
+          <button type="button" class="btn-gold" onclick="submitCustomerLogin()" style="padding:14px; font-size:14px; letter-spacing:0.4px;">
+            ENTRAR NO APLICATIVO
+          </button>
+
+          <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; font-size:11.5px; color:#94a3b8;">
+            Use o <strong style="color:var(--gold-light);">CPF</strong> e a <strong style="color:var(--gold-light);">Senha</strong> cadastrados com a consultora da loja.
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé do Login -->
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; color:#94a3b8; padding-top:10px; border-top:1px solid rgba(212,175,55,0.15);">
+        <span>🔒 Acesso Seguro Criptografado</span>
+        <span style="color:var(--gold-light); font-weight:700;">Prime Card VIP</span>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================
+         PARTE 2: DASHBOARD DO APLICATIVO (EXIBIDO APÓS O LOGIN)
+         ========================================================== -->
+    <div id="dashboard-screen" style="display:none; flex-direction:column;">
+
+      <!-- User Greeting Header -->
+      <div class="app-header">
+        <div class="user-greeting">
+          <div class="user-avatar" id="ui-avatar">C</div>
+          <div>
+            <div style="font-size:11px; color:var(--gold); font-weight:700; text-transform:uppercase; letter-spacing:0.6px;" id="ui-holder-tier">Cliente Prime VIP</div>
+            <div style="font-size:16px; font-weight:800; color:#fff;" id="ui-holder-name">Carregando...</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-ghost" onclick="toggleCardNumbers()" id="btn-eye">👁️ Dados</button>
+          <button class="btn-ghost" onclick="logoutApp()" title="Bloquear e voltar para a tela de Login">🔒 Sair</button>
+        </div>
+      </div>
+
+      <!-- 3D Metallic Black & Gold Card -->
+      <div class="card-wrapper">
+        <div class="prime-card" id="ui-card-box">
+          <div class="card-top-row">
+            <div>
+              <div class="card-brand-title" id="ui-card-brand">BomPreço Prime Card</div>
+              <div class="card-brand-sub" id="ui-card-sub">VIP Internacional • Black & Gold</div>
+            </div>
+            <span class="card-status-pill" id="ui-card-status">● ATIVO</span>
+          </div>
+
+          <div class="card-chip-row">
+            <div class="gold-chip"></div>
+            <div style="font-size:11px; color:var(--gold-light); font-family:monospace; background:rgba(0,0,0,0.45); padding:4px 10px; border-radius:6px; border:1px solid rgba(212,175,55,0.25);">
+              Voucher: <strong id="ui-voucher">VCH-0000</strong>
+            </div>
+          </div>
+
+          <div class="card-number-display" id="ui-card-number">6060 •••• •••• 0000</div>
+
+          <div class="card-bottom-row">
+            <div>
+              <div style="font-size:9px; text-transform:uppercase; color:#94a3b8;">Titular</div>
+              <div style="font-weight:800; color:#fff; font-size:12px;" id="ui-card-holder">NOME DO CLIENTE</div>
+            </div>
+            <div>
+              <div style="font-size:9px; text-transform:uppercase; color:#94a3b8;">Validade / CVV</div>
+              <div style="font-weight:800; color:var(--gold-light); font-size:12px;" id="ui-card-exp">08/30 • ***</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px; text-transform:uppercase; color:#94a3b8;">PIN Caixa</div>
+              <div style="font-weight:800; color:#60a5fa; font-size:12px;" id="ui-card-pin">••••</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Dock -->
+      <div class="quick-dock">
+        <button class="dock-btn" onclick="switchAppTab('pix')">
+          <div class="dock-icon">❖</div>
+          <span class="dock-label">Pagar PIX</span>
+        </button>
+        <button class="dock-btn" onclick="switchAppTab('pix')">
+          <div class="dock-icon">📅</div>
+          <span class="dock-label">Parcelar</span>
+        </button>
+        <button class="dock-btn" onclick="copyVirtualCard()">
+          <div class="dock-icon">💳</div>
+          <span class="dock-label">Cartão Virtual</span>
+        </button>
+        <button class="dock-btn" onclick="switchAppTab('card')">
+          <div class="dock-icon">⬆️</div>
+          <span class="dock-label">Mais Limite</span>
+        </button>
+        <button class="dock-btn" onclick="switchAppTab('card')">
+          <div class="dock-icon">🔒</div>
+          <span class="dock-label">Segurança</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: INÍCIO, BANNERS & BENEFÍCIOS -->
+      <div id="tab-home" class="app-section active">
+
+        <!-- Promotional Banners Carousel -->
+        <div>
+          <div class="section-head">
+            <span class="section-title">✨ Ofertas & Benefícios Prime</span>
+            <div class="banner-dots">
+              <span class="banner-dot active" onclick="showBanner(0)"></span>
+              <span class="banner-dot" onclick="showBanner(1)"></span>
+              <span class="banner-dot" onclick="showBanner(2)"></span>
+            </div>
+          </div>
+
+          <!-- Banner 1: Gold VIP -->
+          <div class="promo-banner theme-gold active" id="promo-banner-0">
+            <div style="max-width:68%;">
+              <span class="promo-tag">🔥 Oferta Exclusiva Cartão</span>
+              <div class="promo-title">Semana Prime Gold: Até 15% OFF + 10x Sem Juros</div>
+              <div class="promo-desc">Válido em Eletro, Bazar e Mercearia pagando com seu Prime Card.</div>
+              <button class="promo-cta" onclick="activatePromoCoupon('PRIME15VIP', '15% OFF + 10x Sem Juros ativado no seu CPF!')">⚡ Ativar Desconto no CPF</button>
+            </div>
+            <svg width="82" height="82" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="36" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.5"/>
+              <rect x="18" y="26" width="44" height="28" rx="6" fill="#0B111E" stroke="#F3E5AB" stroke-width="2"/>
+              <rect x="24" y="33" width="10" height="7" rx="2" fill="#D4AF37"/>
+              <path d="M24 46H48" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="56" cy="24" r="10" fill="#D4AF37"/>
+              <text x="56" y="28" text-anchor="middle" fill="#05080F" font-size="10" font-weight="900">%</text>
+            </svg>
+          </div>
+
+          <!-- Banner 2: Sapphire Blue Cashback -->
+          <div class="promo-banner theme-blue" id="promo-banner-1">
+            <div style="max-width:68%;">
+              <span class="promo-tag" style="border-color:#60a5fa; color:#93c5fd; background:rgba(37,99,235,0.25);">💎 Clube Prime Cashback</span>
+              <div class="promo-title">Ganhe 3% de Cashback na Fatura em Toda Compra</div>
+              <div class="promo-desc">Use seu cartão na loja e acumule pontos que viram desconto direto.</div>
+              <button class="promo-cta" onclick="activatePromoCoupon('CASHBACK3', 'Cashback Prime 3% ativo para suas próximas compras!')">💎 Ativar Cashback 3%</button>
+            </div>
+            <svg width="82" height="82" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="36" fill="rgba(59,130,246,0.18)" stroke="#60A5FA" stroke-width="1.5"/>
+              <path d="M40 18L56 32L40 62L24 32L40 18Z" fill="rgba(212,175,55,0.25)" stroke="#F3E5AB" stroke-width="2"/>
+              <circle cx="40" cy="36" r="8" fill="#D4AF37"/>
+            </svg>
+          </div>
+
+          <!-- Banner 3: Midnight Parcelamento -->
+          <div class="promo-banner theme-midnight" id="promo-banner-2">
+            <div style="max-width:68%;">
+              <span class="promo-tag">💳 Fôlego Financeiro</span>
+              <div class="promo-title">Parcele sua Fatura em até 12x Fixas na Hora</div>
+              <div class="promo-desc">Libere seu limite imediatamente no caixa pagando a 1ª parcela via PIX.</div>
+              <button class="promo-cta" onclick="switchAppTab('pix')">🧮 Simular Parcelamento</button>
+            </div>
+            <svg width="82" height="82" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="36" fill="rgba(212,175,55,0.14)" stroke="#D4AF37" stroke-width="1.5"/>
+              <path d="M26 52L36 40L44 46L56 28" stroke="#F3E5AB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="56" cy="28" r="4" fill="#60A5FA"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Limit & Best Purchase Day Card -->
+        <div class="surface-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
+            <div>
+              <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Limite Disponível para Compras</div>
+              <div style="font-size:26px; font-weight:900; color:var(--gold-light);" id="ui-avail-limit">R$ 0,00</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:#94a3b8;">Limite Total</div>
+              <div style="font-size:14px; font-weight:800; color:#fff;" id="ui-total-limit">R$ 0,00</div>
+            </div>
+          </div>
+
+          <div style="height:8px; background:#162238; border-radius:99px; overflow:hidden; margin-bottom:10px;">
+            <div id="ui-limit-bar" style="height:100%; width:25%; background:linear-gradient(90deg, #2563eb 0%, #d4af37 100%); border-radius:99px;"></div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#cbd5e1;">
+            <span>Utilizado: <strong id="ui-used-limit" style="color:#fff;">R$ 0,00</strong></span>
+            <span>🛒 Melhor Dia: <strong id="ui-best-day" style="color:var(--gold-light);">Dia 05</strong> (Venc. <span id="ui-due-day">15</span>)</span>
+          </div>
+        </div>
+
+        <!-- Invoice Summary Highlight -->
+        <div class="surface-card" style="border-color:rgba(59, 130, 246, 0.35);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:#93c5fd;">📄 Fatura Atual</span>
+            <span id="ui-st-badge" style="font-size:11px; font-weight:800; padding:3px 9px; border-radius:99px; background:rgba(212,175,55,0.18); color:var(--gold-light);">Aberta</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+            <div style="font-size:24px; font-weight:900; color:#fff;" id="ui-st-amount">R$ 0,00</div>
+            <div style="font-size:12px; color:#94a3b8;">Vence em <strong id="ui-st-due" style="color:#fff;">—</strong></div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <button class="btn-gold" onclick="switchAppTab('pix')">❖ Pagar com PIX</button>
+            <button class="btn-blue" onclick="switchAppTab('invoice')">📄 Ver Extrato</button>
+          </div>
+        </div>
+
+        <!-- Secondary Benefit Banners (2-Column Grid) -->
+        <div class="mini-perks-grid">
+          <div class="perk-card" onclick="copyVoucherCode()">
+            <div style="font-size:18px; margin-bottom:4px;">🎫</div>
+            <div style="font-size:12.5px; font-weight:800; color:var(--gold-light);">Voucher 10% OFF</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Toque para copiar seu código de compra no caixa</div>
+          </div>
+          <div class="perk-card" onclick="switchAppTab('card')">
+            <div style="font-size:18px; margin-bottom:4px;">🛡️</div>
+            <div style="font-size:12.5px; font-weight:800; color:#93c5fd;">Proteção Prime</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Seguro Conta Protegida e alertas em tempo real</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: FATURA, EXTRATO & SIMULADOR DE COMPRAS -->
+      <div id="tab-invoice" class="app-section">
+        <div class="surface-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div>
+              <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; font-weight:700;">Resumo da Fatura</div>
+              <div style="font-size:22px; font-weight:900; color:var(--gold-light);" id="inv-total">R$ 0,00</div>
+            </div>
+            <a id="btn-boleto-pdf" href="/api/portal/1" target="_blank" class="btn-ghost" style="text-decoration:none;">🖨️ Fatura / Boleto</a>
+          </div>
+          <div style="font-size:12px; color:#cbd5e1; display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08);">
+            <span>Pagamento Mínimo (15%): <strong id="inv-min" style="color:var(--gold-light);">R$ 0,00</strong></span>
+            <span>Encargos: <strong id="inv-charges">R$ 0,00</strong></span>
+          </div>
+        </div>
+
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:10px;">🛒 Lançamentos & Compras no Caixa</div>
+          <div id="ui-tx-list"></div>
+        </div>
+
+        <!-- Simulador de Compra Parcelada -->
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:8px;">🧮 Simulador de Compra na Loja</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+            <div>
+              <label style="font-size:11px; color:#94a3b8;">Valor da Compra (R$)</label>
+              <input type="number" id="sim-buy-val" class="app-input" value="350" oninput="renderBuySimulator()" />
+            </div>
+            <div>
+              <label style="font-size:11px; color:#94a3b8;">Modalidade</label>
+              <select id="sim-buy-mod" class="app-select" onchange="renderBuySimulator()">
+                <option value="rotativo">Rotativo Sem Juros (até 3x)</option>
+                <option value="crediario">Crediário Prime (até 12x)</option>
+              </select>
+            </div>
+          </div>
+          <div id="sim-buy-output" style="font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:5px;"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: PIX IMEDIATO & PARCELAMENTO DE FATURA -->
+      <div id="tab-pix" class="app-section">
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:6px;">❖ Pagamento Instantâneo via PIX</div>
+          <p style="font-size:12px; color:#94a3b8; margin-bottom:12px;">
+            O pagamento via PIX dá baixa imediata na fatura e libera o limite do seu cartão no caixa na mesma hora.
+          </p>
+
+          <div style="background:#05080f; border:1px dashed var(--border-gold); border-radius:10px; padding:10px; font-family:monospace; font-size:11px; color:var(--gold-light); word-break:break-all; margin-bottom:12px;" id="ui-pix-payload">
+            00020126580014BR.GOV.BCB.PIX...
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <button class="btn-ghost" onclick="copyPixCode()">📋 Copiar Código PIX</button>
+            <button class="btn-gold" onclick="confirmPixPayment()">✔ Pagar Fatura Agora</button>
+          </div>
+        </div>
+
+        <!-- Parcelamento de Fatura em até 12x -->
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:6px;">📅 Parcelar Fatura em até 12x Fixas</div>
+          <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">
+            Escolha o plano ideal para parcelar sua fatura e desbloquear seu cartão imediatamente:
+          </p>
+          <div id="ui-installment-plans" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+          <button class="btn-blue" onclick="confirmInstallmentAgreement()">🤝 Confirmar Parcelamento de Fatura</button>
+        </div>
+
+        <!-- Promessa de Pagamento -->
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:8px;">📆 Agendar Promessa de Pagamento</div>
+          <div style="display:flex; gap:8px;">
+            <input type="date" id="promise-date-input" class="app-input" value="2026-10-20" />
+            <button class="btn-ghost" style="white-space:nowrap;" onclick="savePaymentPromise()">Agendar Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MEU CARTÃO, SENHA PIN, LIMITE & SEGURANÇA -->
+      <div id="tab-card" class="app-section">
+        <!-- Solicitar Aumento de Limite -->
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:8px;">⬆️ Solicitar Aumento de Limite</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="number" id="req-limit-input" class="app-input" step="100" placeholder="Novo limite desejado (R$)" />
+            <button class="btn-gold" style="width:auto; white-space:nowrap;" onclick="requestMoreLimit()">Solicitar</button>
+          </div>
+        </div>
+
+        <!-- Alterar Senha PIN e Vencimento -->
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:10px;">🔑 Senha PIN do Caixa & Vencimento</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:11px; color:#94a3b8;">Nova Senha PIN (4 dígitos)</label>
+              <input type="text" id="cfg-pin-input" class="app-input" maxlength="4" placeholder="1234" />
+            </div>
+            <div>
+              <label style="font-size:11px; color:#94a3b8;">Dia de Vencimento</label>
+              <select id="cfg-due-day" class="app-select">
+                <option value="5">Dia 05</option>
+                <option value="10">Dia 10</option>
+                <option value="15">Dia 15</option>
+                <option value="20">Dia 20</option>
+                <option value="25">Dia 25</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-blue" onclick="saveCardConfig()">💾 Salvar Senha PIN & Vencimento</button>
+        </div>
+
+        <!-- Seguros & Bloqueio Temporário -->
+        <div class="surface-card">
+          <div class="section-title" style="margin-bottom:10px;">🛡️ Serviços & Bloqueio Preventivo</div>
+          <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+            <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+              <span>🛡️ Seguro Conta Protegida Prime (R$ 9,90/mês)</span>
+              <input type="checkbox" id="chk-seguro" onchange="saveCardServices()" style="width:18px; height:18px; accent-color:#d4af37;" />
+            </label>
+            <label style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+              <span>📲 Avisos de Compras por SMS/WhatsApp (R$ 5,90/mês)</span>
+              <input type="checkbox" id="chk-sms" onchange="saveCardServices()" style="width:18px; height:18px; accent-color:#d4af37;" />
+            </label>
+            <div style="padding-top:8px; border-top:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+              <span>🔒 Bloqueio Temporário do Cartão</span>
+              <button class="btn-ghost" id="btn-toggle-lock" onclick="toggleCardLock()">Bloquear Cartão</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <nav class="bottom-nav">
+        <button class="bnav-btn active" data-tab="home" onclick="switchAppTab('home')">
+          <span style="font-size:17px;">🏠</span>
+          <span>Início</span>
+        </button>
+        <button class="bnav-btn" data-tab="invoice" onclick="switchAppTab('invoice')">
+          <span style="font-size:17px;">📄</span>
+          <span>Fatura</span>
+        </button>
+        <button class="bnav-btn" data-tab="pix" onclick="switchAppTab('pix')">
+          <span style="font-size:17px;">❖</span>
+          <span>PIX & Acordo</span>
+        </button>
+        <button class="bnav-btn" data-tab="card" onclick="switchAppTab('card')">
+          <span style="font-size:17px;">💳</span>
+          <span>Cartão</span>
+        </button>
+      </nav>
+
+    </div>
+
+  </div>
+
+  <script>
+    let STATE = null;
+    let CURRENT_HOLDER = null;
+    let CURRENT_STATEMENT = null;
+    let IS_AUTHENTICATED = false;
+    let SHOW_SENSITIVE = false;
+    let SELECTED_PLAN_INSTALLMENTS = 3;
+    let CURRENT_BANNER = 0;
+
+    function formatBRL(v) {
+      return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function showAppToast(msg) {
+      const t = document.getElementById('app-toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3200);
+    }
+
+    function maskLoginCpf(el) {
+      let v = el.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      el.value = v;
+    }
+
+    function toggleLoginPasswordVisibility() {
+      const inp = document.getElementById('login-pin-input');
+      const btn = document.getElementById('btn-toggle-pass');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈 Ocultar';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁️ Mostrar';
+      }
+    }
+
+    async function submitCustomerLogin() {
+      const cpfVal = document.getElementById('login-cpf-input').value.trim();
+      const pinVal = document.getElementById('login-pin-input').value.trim();
+
+      if (!cpfVal) {
+        showAppToast('⚠️ Digite seu CPF para entrar no aplicativo.');
+        return;
+      }
+      if (!pinVal) {
+        showAppToast('⚠️ Digite sua senha para entrar no aplicativo.');
+        return;
+      }
+
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'cliente',
+          cpf: cpfVal,
+          password: pinVal
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        showAppToast(`❌ ${data.error || 'CPF ou senha inválidos'}`);
+        return;
+      }
+
+      IS_AUTHENTICATED = true;
+      CURRENT_HOLDER = data.holder;
+      sessionStorage.setItem('bp_customer_holder_id', String(data.holder.id));
+      sessionStorage.setItem('bp_customer_cpf', String(data.holder.cpf));
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').style.display = 'flex';
+      const cpfBadge = document.getElementById('top-logged-cpf');
+      if (cpfBadge) {
+        cpfBadge.textContent = `🔒 CPF: ${data.holder.cpf}`;
+        cpfBadge.style.display = 'inline-block';
+      }
+      document.getElementById('btn-logout-top').style.display = 'inline-block';
+
+      await loadPortalData(data.holder.id);
+      showAppToast(`🔓 ${data.message}`);
+    }
+
+    function logoutApp() {
+      IS_AUTHENTICATED = false;
+      CURRENT_HOLDER = null;
+      CURRENT_STATEMENT = null;
+      sessionStorage.removeItem('bp_customer_holder_id');
+      sessionStorage.removeItem('bp_customer_cpf');
+      document.getElementById('dashboard-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      const cpfBadge = document.getElementById('top-logged-cpf');
+      if (cpfBadge) cpfBadge.style.display = 'none';
+      document.getElementById('btn-logout-top').style.display = 'none';
+      document.getElementById('login-pin-input').value = '';
+      showAppToast('🔒 Sessão pessoal encerrada.');
+    }
+
+    function recoverPinPrompt() {
+      showAppToast('📲 Para redefinir sua senha pessoal, confirme seu CPF com a consultora da loja.');
+    }
+
+    function showBanner(idx) {
+      CURRENT_BANNER = idx;
+      for (let i = 0; i < 3; i++) {
+        const b = document.getElementById(`promo-banner-${i}`);
+        if (b) b.classList.toggle('active', i === idx);
+      }
+      document.querySelectorAll('.banner-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === idx);
+      });
+    }
+
+    setInterval(() => {
+      showBanner((CURRENT_BANNER + 1) % 3);
+    }, 5500);
+
+    function activatePromoCoupon(code, msg) {
+      navigator.clipboard?.writeText(code);
+      showAppToast(`🎁 ${msg}`);
+    }
+
+    function switchAppTab(tab) {
+      document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(`tab-${tab}`)?.classList.add('active');
+      document.querySelectorAll('.bnav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tab);
+      });
+    }
+
+    async function loadPortalData(authenticatedHolderId) {
+      if (!IS_AUTHENTICATED || !authenticatedHolderId) return;
+
+      const res = await fetch(`/api/state?holder_id=${authenticatedHolderId}`);
+      STATE = await res.json();
+
+      const holder = (STATE.leads || []).find(h => h.id === parseInt(authenticatedHolderId, 10));
+      if (!holder) return;
+
+      CURRENT_HOLDER = holder;
+      CURRENT_STATEMENT = (STATE.statements || []).find(s => s.holder_id === holder.id) || null;
+
+      renderAppUI();
+    }
+
+    function renderAppUI() {
+      if (!CURRENT_HOLDER) return;
+      const h = CURRENT_HOLDER;
+      const st = CURRENT_STATEMENT;
+      const store = STATE.store || {};
+
+      document.getElementById('login-brand-title').textContent = store.card_brand_name || 'BomPreço Prime Card';
+      document.getElementById('ui-avatar').textContent = (h.full_name || 'C').charAt(0).toUpperCase();
+      document.getElementById('ui-holder-name').textContent = h.full_name;
+      document.getElementById('ui-card-brand').textContent = store.card_brand_name || 'BomPreço Prime Card';
+      document.getElementById('ui-card-holder').textContent = h.full_name.toUpperCase();
+      document.getElementById('ui-voucher').textContent = h.voucher_code || 'VCH-PRIME';
+      const tierEl = document.getElementById('ui-holder-tier');
+      if (tierEl) tierEl.textContent = `Cliente ${h.card_tier || 'VIP Internacional'}`;
+      const subEl = document.getElementById('ui-card-sub');
+      if (subEl) subEl.textContent = `${h.card_tier || 'VIP Internacional'} • Black & Gold`;
+
+      const cardBox = document.getElementById('ui-card-box');
+      const statusPill = document.getElementById('ui-card-status');
+      if (h.card_status === 'bloqueado') {
+        cardBox.classList.add('blocked');
+        statusPill.textContent = '🔒 BLOQUEADO';
+        document.getElementById('btn-toggle-lock').textContent = '🔓 Desbloquear Cartão';
+      } else {
+        cardBox.classList.remove('blocked');
+        statusPill.textContent = '● PRIME ATIVO';
+        document.getElementById('btn-toggle-lock').textContent = '🔒 Bloquear Cartão';
+      }
+
+      if (SHOW_SENSITIVE) {
+        document.getElementById('ui-card-number').textContent = h.card_number_full;
+        document.getElementById('ui-card-exp').textContent = `${h.card_expiry} • CVV ${h.card_cvv}`;
+        document.getElementById('ui-card-pin').textContent = h.card_pin || '1234';
+      } else {
+        document.getElementById('ui-card-number').textContent = `6060 •••• •••• ${h.card_number_last4}`;
+        document.getElementById('ui-card-exp').textContent = `${h.card_expiry} • ***`;
+        document.getElementById('ui-card-pin').textContent = '••••';
+      }
+
+      document.getElementById('ui-avail-limit').textContent = formatBRL(h.available_limit);
+      document.getElementById('ui-total-limit').textContent = formatBRL(h.approved_limit);
+      document.getElementById('ui-used-limit').textContent = formatBRL(h.used_limit);
+      document.getElementById('ui-best-day').textContent = `Dia ${String(h.best_purchase_day).padStart(2, '0')}`;
+      document.getElementById('ui-due-day').textContent = String(h.due_day).padStart(2, '0');
+
+      const pctAvail = h.approved_limit > 0 ? Math.max(5, Math.min(100, Math.round((h.available_limit / h.approved_limit) * 100))) : 0;
+      document.getElementById('ui-limit-bar').style.width = `${pctAvail}%`;
+
+      if (st) {
+        document.getElementById('ui-st-amount').textContent = formatBRL(st.updated_amount);
+        document.getElementById('ui-st-due').textContent = st.due_date.split('-').reverse().join('/');
+        document.getElementById('ui-st-badge').textContent = st.status === 'paga' ? '✔ Fatura Paga' : st.status_label;
+        document.getElementById('inv-total').textContent = formatBRL(st.updated_amount);
+        document.getElementById('inv-min').textContent = formatBRL(st.minimum_payment);
+        document.getElementById('inv-charges').textContent = formatBRL(st.total_charges);
+        document.getElementById('ui-pix-payload').textContent = st.pix_payload;
+        document.getElementById('btn-boleto-pdf').href = `/api/portal/${st.id}`;
+        renderInstallmentPlans(st.updated_amount);
+      } else {
+        document.getElementById('ui-st-amount').textContent = formatBRL(h.used_limit || 0);
+        document.getElementById('ui-st-due').textContent = `Dia ${String(h.due_day || 15).padStart(2, '0')}`;
+        document.getElementById('ui-st-badge').textContent = 'Ciclo Aberto';
+        document.getElementById('inv-total').textContent = formatBRL(h.used_limit || 0);
+        document.getElementById('inv-min').textContent = formatBRL((h.used_limit || 0) * 0.15);
+        document.getElementById('inv-charges').textContent = 'R$ 0,00';
+        document.getElementById('ui-pix-payload').textContent = `00020126580014BR.GOV.BCB.PIX0114${(h.cpf || '').replace(/\D/g, '')}5204000053039865802BR`;
+        renderInstallmentPlans(h.used_limit || 100);
+      }
+
+      // Render POS Transactions
+      const txs = (STATE.pos_transactions || []).filter(t => t.holder_id === h.id);
+      const txList = document.getElementById('ui-tx-list');
+      if (txs.length === 0) {
+        txList.innerHTML = `<div style="font-size:12px; color:#94a3b8; padding:8px 0;">Nenhuma compra registrada neste ciclo.</div>`;
+      } else {
+        txList.innerHTML = txs.map(t => `
+          <div class="tx-row">
+            <div>
+              <div style="font-size:13px; font-weight:700; color:#fff;">${t.items_summary}</div>
+              <div style="font-size:11px; color:#94a3b8;">NSU ${t.nsu_code} • ${t.installments}x (${t.modality})</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:13px; font-weight:800; color:var(--gold-light);">${formatBRL(t.amount_brl)}</div>
+              <div style="font-size:10px; color:#64748b;">${t.status === 'estornada' ? 'ESTORNADA' : 'APROVADA'}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('req-limit-input').value = Number(h.approved_limit) + 500;
+      document.getElementById('cfg-pin-input').value = h.card_pin || '1234';
+      document.getElementById('cfg-due-day').value = String(h.due_day || 15);
+      document.getElementById('chk-seguro').checked = Boolean(h.has_seguro_protegido);
+      document.getElementById('chk-sms').checked = Boolean(h.has_sms_alerta);
+
+      renderBuySimulator();
+    }
+
+    function toggleCardNumbers() {
+      SHOW_SENSITIVE = !SHOW_SENSITIVE;
+      renderAppUI();
+      showAppToast(SHOW_SENSITIVE ? '🔓 Dados do cartão visíveis' : '🔒 Dados do cartão ocultos');
+    }
+
+    function copyVirtualCard() {
+      if (!CURRENT_HOLDER) return;
+      navigator.clipboard?.writeText(CURRENT_HOLDER.card_number_full);
+      showAppToast(`💳 Cartão Virtual copiado: ${CURRENT_HOLDER.card_number_full}`);
+    }
+
+    function copyVoucherCode() {
+      if (!CURRENT_HOLDER) return;
+      navigator.clipboard?.writeText(CURRENT_HOLDER.voucher_code);
+      showAppToast(`🎫 Voucher copiado: ${CURRENT_HOLDER.voucher_code}`);
+    }
+
+    function copyPixCode() {
+      const code = document.getElementById('ui-pix-payload').textContent.trim();
+      navigator.clipboard?.writeText(code);
+      showAppToast('❖ Código PIX Copia e Cola copiado!');
+    }
+
+    async function confirmPixPayment() {
+      if (!CURRENT_STATEMENT) return;
+      await fetch('/api/mark-paid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statement_id: CURRENT_STATEMENT.id })
+      });
+      showAppToast('✅ Fatura paga via PIX! Seu limite foi liberado na hora.');
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    function renderInstallmentPlans(amount) {
+      const base = Math.max(100, Number(amount || 300));
+      const plans = [3, 6, 10, 12];
+      const container = document.getElementById('ui-installment-plans');
+      container.innerHTML = plans.map(n => {
+        const total = base * Math.pow(1.0499, n * 0.45);
+        const pmt = total / n;
+        const sel = n === SELECTED_PLAN_INSTALLMENTS;
+        return `
+          <div onclick="selectPlan(${n})" style="padding:10px 12px; border-radius:10px; border:1px solid ${sel ? '#d4af37' : 'rgba(59,130,246,0.25)'}; background:${sel ? 'rgba(212,175,55,0.14)' : '#070b14'}; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+            <span style="font-size:13px; font-weight:800; color:#fff;">${n}x fixas de ${formatBRL(pmt)}</span>
+            <span style="font-size:11px; color:var(--gold-light);">Total: ${formatBRL(total)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectPlan(n) {
+      SELECTED_PLAN_INSTALLMENTS = n;
+      if (CURRENT_STATEMENT) renderInstallmentPlans(CURRENT_STATEMENT.updated_amount);
+    }
+
+    async function confirmInstallmentAgreement() {
+      if (!CURRENT_STATEMENT) return;
+      const base = Number(CURRENT_STATEMENT.updated_amount || 300);
+      const total = base * Math.pow(1.0499, SELECTED_PLAN_INSTALLMENTS * 0.45);
+      await fetch('/api/agreements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          statement_id: CURRENT_STATEMENT.id,
+          option_label: `Parcelamento Super App ${SELECTED_PLAN_INSTALLMENTS}x`,
+          agreed_amount: Number(total.toFixed(2)),
+          installments: SELECTED_PLAN_INSTALLMENTS,
+          installment_value: Number((total / SELECTED_PLAN_INSTALLMENTS).toFixed(2)),
+          discount_pct: 0
+        })
+      });
+      showAppToast(`🤝 Fatura parcelada em ${SELECTED_PLAN_INSTALLMENTS}x! Cartão liberado.`);
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    async function savePaymentPromise() {
+      if (!CURRENT_STATEMENT) return;
+      const dt = document.getElementById('promise-date-input').value;
+      await fetch('/api/register-promise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statement_id: CURRENT_STATEMENT.id, promise_date: dt })
+      });
+      showAppToast(`📆 Promessa de pagamento registrada para ${dt.split('-').reverse().join('/')}!`);
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    function renderBuySimulator() {
+      const val = parseFloat(document.getElementById('sim-buy-val')?.value || '350');
+      const mod = document.getElementById('sim-buy-mod')?.value || 'rotativo';
+      const out = document.getElementById('sim-buy-output');
+      if (!out) return;
+      if (mod === 'rotativo') {
+        out.innerHTML = [1, 2, 3].map(n =>
+          `<div style="display:flex; justify-content:space-between;"><span>${n}x Sem Juros na Loja</span><strong style="color:var(--gold-light);">${n}x de ${formatBRL(val / n)}</strong></div>`
+        ).join('');
+      } else {
+        out.innerHTML = [4, 6, 10, 12].map(n => {
+          const pmt = (val * Math.pow(1.0499, n * 0.5)) / n;
+          return `<div style="display:flex; justify-content:space-between;"><span>Crediário ${n}x fixas</span><strong style="color:#93c5fd;">${n}x de ${formatBRL(pmt)}</strong></div>`;
+        }).join('');
+      }
+    }
+
+    async function requestMoreLimit() {
+      if (!CURRENT_HOLDER) return;
+      const newLim = parseFloat(document.getElementById('req-limit-input').value || '1500');
+      await fetch('/api/leads/update-holder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: CURRENT_HOLDER.id, approved_limit: newLim })
+      });
+      showAppToast(`⬆️ Novo limite de ${formatBRL(newLim)} aprovado na hora!`);
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    async function saveCardConfig() {
+      if (!CURRENT_HOLDER) return;
+      const pin = document.getElementById('cfg-pin-input').value.trim() || '1234';
+      const due = parseInt(document.getElementById('cfg-due-day').value || '15', 10);
+      await fetch('/api/leads/update-holder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: CURRENT_HOLDER.id, card_pin: pin, due_day: due })
+      });
+      showAppToast('🔑 Senha PIN e vencimento atualizados!');
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    async function saveCardServices() {
+      if (!CURRENT_HOLDER) return;
+      const seg = document.getElementById('chk-seguro').checked;
+      const sms = document.getElementById('chk-sms').checked;
+      await fetch('/api/leads/update-holder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: CURRENT_HOLDER.id, has_seguro_protegido: seg, has_sms_alerta: sms })
+      });
+      showAppToast('🛡️ Serviços do cartão atualizados!');
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    async function toggleCardLock() {
+      if (!CURRENT_HOLDER) return;
+      const nextStatus = CURRENT_HOLDER.card_status === 'bloqueado' ? 'ativo' : 'bloqueado';
+      await fetch('/api/leads/update-holder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: CURRENT_HOLDER.id, card_status: nextStatus })
+      });
+      showAppToast(nextStatus === 'bloqueado' ? '🔒 Cartão bloqueado temporariamente' : '🔓 Cartão desbloqueado para uso');
+      await loadPortalData(CURRENT_HOLDER.id);
+    }
+
+    let LAST_DB_VER = null;
+    async function pollPortalLiveSync() {
+      try {
+        const r = await fetch('/api/sync-version');
+        if (!r.ok) return;
+        const d = await r.json();
+        if (LAST_DB_VER && LAST_DB_VER !== d.db_version) {
+          LAST_DB_VER = d.db_version;
+          const activeTag = document.activeElement?.tagName;
+          if (IS_AUTHENTICATED && CURRENT_HOLDER?.id && activeTag !== 'INPUT' && activeTag !== 'SELECT') {
+            await loadPortalData(CURRENT_HOLDER.id);
+          }
+        } else if (!LAST_DB_VER) {
+          LAST_DB_VER = d.db_version;
+        }
+      } catch (e) {}
+    }
+
+    async function naturalKeepAlive10Min() {
+      try {
+        const r = await fetch('/api/sync-version?keepalive=1&cycle=10min', { cache: 'no-store' });
+        if (r.ok) {
+          const d = await r.json();
+          if (d.external_links) {
+            Object.values(d.external_links).forEach(u => {
+              if (u && u.startsWith('https://')) {
+                fetch(`${u}/api/sync-version?keepalive=1`, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+              }
+            });
+          }
+        }
+        if (IS_AUTHENTICATED && CURRENT_HOLDER?.id) {
+          await loadPortalData(CURRENT_HOLDER.id);
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const savedHolderId = sessionStorage.getItem('bp_customer_holder_id');
+      const savedCpf = sessionStorage.getItem('bp_customer_cpf');
+      if (savedHolderId && savedCpf) {
+        IS_AUTHENTICATED = true;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('dashboard-screen').style.display = 'flex';
+        const cpfBadge = document.getElementById('top-logged-cpf');
+        if (cpfBadge) {
+          cpfBadge.textContent = `🔒 CPF: ${savedCpf}`;
+          cpfBadge.style.display = 'inline-block';
+        }
+        document.getElementById('btn-logout-top').style.display = 'inline-block';
+        await loadPortalData(Number(savedHolderId));
+      }
+      setInterval(pollPortalLiveSync, 2200);
+      // Ping de manutenção de túnel a cada 45s + Ciclo completo natural a cada 10 minutos (600.000 ms)
+      setInterval(naturalKeepAlive10Min, 45000);
+      setInterval(naturalKeepAlive10Min, 600000);
+    });
+  </script>
+</body>
+</html>

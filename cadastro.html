@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal do Colaborador — Cadastro de Cliente & Esteira de Crédito</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    body {
+      display: block;
+      background: radial-gradient(circle at top right, #111e3d 0%, #070b12 55%, #05070c 100%);
+      color: #f8fafc;
+    }
+    .colab-header {
+      background: rgba(6, 10, 19, 0.92);
+      backdrop-filter: blur(12px);
+      padding: 14px 26px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .colab-main {
+      max-width: 1380px;
+      margin: 22px auto 48px;
+      padding: 0 24px;
+    }
+    .colab-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .step-section {
+      background: rgba(10, 16, 29, 0.75);
+      border: 1px solid rgba(212, 175, 55, 0.18);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+    .step-title {
+      font-size: 12.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--gold-light);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .bio-frame {
+      background: #05080f;
+      border: 1px dashed rgba(212, 175, 55, 0.45);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stage-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      background: #080d18;
+      margin-bottom: 8px;
+      font-size: 12.5px;
+    }
+    .stage-item.done {
+      border-color: rgba(212, 175, 55, 0.5);
+      background: rgba(212, 175, 55, 0.08);
+    }
+    @media (max-width: 1024px) {
+      .colab-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE LOGIN DO COLABORADOR (ANTES DO DASHBOARD DE CADASTRO) -->
+  <div id="colab-login-overlay" style="position:fixed; inset:0; z-index:999; background:radial-gradient(circle at 75% 15%, rgba(212,175,55,0.18) 0%, transparent 45%), radial-gradient(circle at 20% 85%, rgba(37,99,235,0.22) 0%, transparent 50%), linear-gradient(135deg, #04070d 0%, #0a1120 60%, #0f1b36 100%); display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="width:100%; max-width:430px; background:linear-gradient(180deg, #0f172a 0%, #090e1a 100%); border:1px solid rgba(212,175,55,0.45); border-radius:20px; padding:30px 26px; box-shadow:0 28px 80px rgba(0,0,0,0.8);">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="width:58px; height:58px; border-radius:16px; margin:0 auto 10px; background:linear-gradient(135deg, #f3e5ab 0%, #d4af37 50%, #9a7b1c 100%); color:#05080f; font-weight:900; font-size:21px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(212,175,55,0.35);">BP</div>
+        <div style="font-size:10px; font-weight:800; color:#d4af37; text-transform:uppercase; letter-spacing:1.4px; margin-bottom:4px;">https://promotorbompreco.com • Loja</div>
+        <h2 style="font-size:20px; font-weight:900; color:#fff;">Portal do Colaborador</h2>
+        <p style="font-size:12px; color:#94a3b8; margin-top:4px;">Entre com seu CPF e senha de consultor(a) para cadastrar clientes</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CPF do Colaborador</label>
+        <input type="text" id="login-colab-cpf" class="input" placeholder="000.000.000-00" value="391.482.109-44" maxlength="14" oninput="maskCpf(this)" style="font-weight:800; letter-spacing:1px;" />
+        <input type="hidden" id="login-colab-user" value="Vanessa (Consultora Prime)" />
+        <input type="hidden" id="login-colab-branch" value="Matriz Centro" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label class="form-label" style="margin-bottom:0;">Senha</label>
+          <span style="font-size:11px; color:#d4af37; font-weight:700;">Padrão: 1234</span>
+        </div>
+        <input type="password" id="login-colab-pass" class="input" value="1234" onkeydown="if(event.key==='Enter') submitColabLogin()" />
+      </div>
+
+      <button type="button" class="btn btn-primary" style="width:100%; padding:13px; font-size:13.5px; font-weight:900;" onclick="submitColabLogin()">
+        ENTRAR NO APLICATIVO
+      </button>
+    </div>
+  </div>
+
+  <!-- Topbar Limpa em Preto, Dourado e Azul -->
+  <header class="colab-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="brand-logo">BP</div>
+      <div>
+        <div style="font-size:16px; font-weight:800; color:var(--gold-light);" id="colab-title">
+          Portal do Colaborador • <span style="color:#93c5fd;">https://promotorbompreco.com</span>
+        </div>
+        <div style="font-size:11.5px; color:#94a3b8;">
+          Captação em Loja • Biometria Facial • Emissão Instantânea de Voucher
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <select id="colab-branch" class="select" style="width:auto; padding:7px 12px; font-size:12px; font-weight:700;" onchange="updatePromoterKpis()">
+        <option value="Matriz Centro">📍 Matriz Centro</option>
+        <option value="Filial Shopping Sul">📍 Filial Shopping Sul</option>
+        <option value="Filial Norte">📍 Filial Norte</option>
+        <option value="Filial Leste">📍 Filial Leste</option>
+      </select>
+
+      <select id="colab-promoter" class="select" style="width:auto; padding:7px 12px; font-size:12px; font-weight:700; border-color:var(--gold); color:var(--gold-light);" onchange="updatePromoterKpis()">
+        <option value="Vanessa (Consultora Prime)">👤 Vanessa (Consultora Prime)</option>
+        <option value="Rodrigo (Consultor Prime)">👤 Rodrigo (Consultor Prime)</option>
+        <option value="Camila (Balcão Crediário)">👤 Camila (Balcão Crediário)</option>
+        <option value="Lucas (Corredor Loja)">👤 Lucas (Corredor Loja)</option>
+      </select>
+
+      <button class="btn btn-sm btn-outline" onclick="addNewCollaborator()">+ Colaborador</button>
+      <a href="/webpos" class="btn btn-sm btn-emerald">🖥️ Ir p/ WebPOS Caixa</a>
+      <a id="admin-back-btn" href="/" class="btn btn-sm btn-outline" style="display:none;">🛡️ Console Adm</a>
+      <button class="btn btn-sm btn-outline" onclick="logoutColab()">🔒 Sair</button>
+    </div>
+  </header>
+
+  <main class="colab-main">
+
+    <!-- 4 KPIs Limpos do Colaborador -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Cadastros do Colaborador</div>
+        <div class="kpi-value" id="kpi-my-leads">0 propostas</div>
+        <div class="kpi-sub">Enviadas para a esteira</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">Aprovados & Vouchers</div>
+        <div class="kpi-value" style="color:#60a5fa;" id="kpi-my-approved">0 clientes</div>
+        <div class="kpi-sub">Prontos para 1ª compra</div>
+      </div>
+      <div class="kpi-card warning">
+        <div class="kpi-label">Seguros Conta Protegida</div>
+        <div class="kpi-value" id="kpi-my-seguros">0 seguros</div>
+        <div class="kpi-sub">Adesão no cadastro</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Minha Comissão Acumulada</div>
+        <div class="kpi-value" style="color:var(--gold-light);" id="kpi-my-commission">R$ 0,00</div>
+        <div class="kpi-sub" id="kpi-commission-rules">R$ 6,00/cartão + R$ 3,50/seguro</div>
+      </div>
+    </div>
+
+    <div class="colab-grid">
+
+      <!-- Coluna Esquerda: Formulário Limpo em 4 Passos -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🪪 Ficha de Cadastro do Cliente (KYC)</div>
+            <div class="card-subtitle">Preencha os dados para submeter à Esteira de Crédito</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-sm btn-outline" onclick="fillDemoCustomer()">🧪 Preencher Exemplo</button>
+            <button class="btn btn-sm btn-outline" onclick="resetRegistrationForm()">🔄 Limpar</button>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+          <!-- Passo 1 -->
+          <div class="step-section">
+            <div class="step-title">
+              <span>1. Dados Pessoais & Consulta CPF</span>
+              <span class="badge badge-preventive">Serasa / Receita</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1.1fr 1.4fr; gap:12px;">
+              <div class="form-group">
+                <label class="form-label">CPF do Cliente *</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="reg-cpf" class="input" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this)" />
+                  <button type="button" class="btn btn-sm btn-emerald" onclick="consultarCpfBureau()">🔍 Birô</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nome Completo *</label>
+                <input type="text" id="reg-name" class="input" placeholder="Ex: Patrícia Albuquerque" />
+              </div>
+            </div>
+
+            <div id="bureau-alert-box" style="display:none; padding:10px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; background:rgba(37,99,235,0.15); border:1px solid rgba(96,165,250,0.4); color:#bfdbfe;"></div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1.2fr; gap:12px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">RG / CNH *</label>
+                <input type="text" id="reg-rg" class="input" placeholder="34.812.901-2 SSP/SP" />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Data de Nascimento</label>
+                <input type="date" id="reg-birth" class="input" value="1989-06-15" />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">WhatsApp do Cliente *</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="reg-whatsapp" class="input" placeholder="5511988776655" />
+                  <button type="button" class="btn btn-sm btn-outline" onclick="sendSmsToken()">📲 Token</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:12px; margin-top:12px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Nome Completo da Mãe *</label>
+                <input type="text" id="reg-mother" class="input" placeholder="Ex: Maria Helena Albuquerque" />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">E-mail (Fatura Digital)</label>
+                <input type="email" id="reg-email" class="input" placeholder="cliente@email.com.br" />
+              </div>
+            </div>
+
+            <div id="sms-token-box" style="display:none; margin-top:10px; padding:10px 12px; background:#060a12; border:1px solid var(--gold); border-radius:8px; align-items:center; justify-content:space-between; gap:8px;">
+              <span style="font-size:12px; color:var(--gold-light);" id="sms-token-label">📲 Código enviado</span>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="reg-sms-code" class="input" style="width:90px; padding:5px; text-align:center; font-weight:800;" maxlength="4" />
+                <button type="button" class="btn btn-sm btn-primary" onclick="verifySmsToken()">✔ Validar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passo 2 -->
+          <div class="step-section">
+            <div class="step-title">
+              <span>2. Endereço, Profissão & Renda</span>
+              <span class="badge badge-agreement" id="limit-preview-badge">Limite Sugerido: R$ 1.820,00</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 0.9fr 2.1fr; gap:12px;">
+              <div class="form-group">
+                <label class="form-label">CEP</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="reg-cep" class="input" placeholder="01310-100" maxlength="9" />
+                  <button type="button" class="btn btn-sm btn-outline" onclick="buscarCep()">CEP</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Endereço Completo *</label>
+                <input type="text" id="reg-address" class="input" placeholder="Av. Paulista, 1578 - Bela Vista, São Paulo/SP" />
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 0.9fr 0.9fr; gap:10px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Ocupação</label>
+                <select id="reg-occupation" class="select" onchange="updateLimitPreview()">
+                  <option value="Assalariado CLT">Assalariado (CLT)</option>
+                  <option value="Autônomo / MEI">Autônomo / MEI</option>
+                  <option value="Servidor Público">Servidor Público</option>
+                  <option value="Aposentado / Pensionista">Aposentado / Pensionista</option>
+                  <option value="Empresário">Empresário(a)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Empresa</label>
+                <input type="text" id="reg-company" class="input" placeholder="Ex: Hospital Santa Catarina" />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Renda (R$) *</label>
+                <input type="number" id="reg-income" class="input" value="2800" step="100" oninput="updateLimitPreview()" />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Score Birô</label>
+                <input type="number" id="reg-score" class="input" value="690" min="150" max="990" oninput="updateLimitPreview()" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Passo 3 -->
+          <div class="step-section">
+            <div class="step-title">
+              <span>3. Biometria Facial & Documento</span>
+              <span class="badge badge-paid" id="bio-badge">Pronto p/ Captura</span>
+            </div>
+
+            <div class="bio-frame">
+              <video id="webcam-video" autoplay playsinline style="width:100%; max-width:260px; border-radius:10px; display:none; margin:0 auto 10px;"></video>
+              <div id="bio-status-label" style="font-size:13px; font-weight:700; color:var(--gold-light); margin-bottom:10px;">
+                📸 Capture a Selfie com Prova de Vida ou simule a validação biométrica
+              </div>
+              <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                <button type="button" class="btn btn-sm btn-outline" onclick="startRealCamera()">📷 Câmera Real</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="captureFacialBiometrics()">⚡ Validar Biometria (99,6%)</button>
+                <button type="button" class="btn btn-sm btn-emerald" onclick="captureDocOCR()">🪪 Validar RG/CNH</button>
+              </div>
+            </div>
+            <input type="hidden" id="reg-bio-status" value="Aprovada (99.4% FaceMatch)" />
+            <input type="hidden" id="reg-doc-status" value="CNH / RG Validado" />
+          </div>
+
+          <!-- Passo 4 -->
+          <div class="step-section" style="margin-bottom:18px;">
+            <div class="step-title">
+              <span>4. Configuração do Cartão & Roteamento da Esteira</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1.4fr; gap:12px; margin-bottom:12px;">
+              <div>
+                <label class="form-label">Dia de Vencimento</label>
+                <select id="reg-due-day" class="select">
+                  <option value="5">Dia 05 (Melhor Compra: 25)</option>
+                  <option value="10">Dia 10 (Melhor Compra: 01)</option>
+                  <option value="15" selected>Dia 15 (Melhor Compra: 05)</option>
+                  <option value="20">Dia 20 (Melhor Compra: 10)</option>
+                  <option value="25">Dia 25 (Melhor Compra: 15)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Senha do App & Cartão *</label>
+                <input type="text" id="reg-pin" class="input" value="1234" maxlength="12" placeholder="Defina a senha c/ cliente" style="font-family:monospace; font-weight:800; letter-spacing:2px;" />
+              </div>
+              <div>
+                <label class="form-label">Modo de Decisão da Esteira</label>
+                <select id="reg-routing" class="select" style="border-color:var(--gold); color:var(--gold-light); font-weight:700;">
+                  <option value="auto" selected>⚡ Motor Automático (Aprova na Hora)</option>
+                  <option value="mesa_manual">🔎 Enviar p/ Mesa de Crédito Manual</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:#cbd5e1; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08);">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="reg-seguro" checked style="width:16px; height:16px; accent-color:#d4af37;" />
+                <span>🛡️ <strong>Seguro Conta Protegida Prime</strong> (+Comissão Colaborador)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="reg-sms" checked style="width:16px; height:16px; accent-color:#d4af37;" />
+                <span>📲 <strong>SMS Alerta Inteligente</strong></span>
+              </label>
+            </div>
+          </div>
+
+          <button type="button" id="btn-submit-esteira" class="btn btn-primary" style="width:100%; padding:14px; font-size:14.5px; font-weight:900;" onclick="submitCustomerToPipeline()">
+            🚀 CADASTRAR CLIENTE & ENVIAR PARA A ESTEIRA DE CRÉDITO
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Motor da Esteira + Fila em Tempo Real -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <!-- Motor de Análise em 4 Etapas -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div class="card-title">⚙️ Motor da Esteira de Crédito</div>
+            <span class="badge badge-due-today" id="engine-status-badge">Aguardando Envio</span>
+          </div>
+          <div class="card-body">
+            <div class="stage-item" id="st-1">
+              <span>1. Receita Federal & Antifraude CPF</span>
+              <span class="badge" id="st-1-b">Pendente</span>
+            </div>
+            <div class="stage-item" id="st-2">
+              <span>2. Política de Crédito & Score Serasa</span>
+              <span class="badge" id="st-2-b">Pendente</span>
+            </div>
+            <div class="stage-item" id="st-3">
+              <span>3. Biometria Facial (Prova de Vida)</span>
+              <span class="badge" id="st-3-b">Pendente</span>
+            </div>
+            <div class="stage-item" id="st-4">
+              <span>4. Alçada de Limite & Voucher 1ª Compra</span>
+              <span class="badge" id="st-4-b">Pendente</span>
+            </div>
+
+            <!-- Resultado / Cartão Emitido -->
+            <div id="approved-card-result" style="display:none; margin-top:14px;">
+              <div class="store-card-visual" style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <div>
+                    <div style="font-size:10px; color:var(--gold-light); text-transform:uppercase; letter-spacing:1px;">Prime Card • Aprovado</div>
+                    <div style="font-size:15px; font-weight:900;" id="res-holder-name">NOME DO CLIENTE</div>
+                  </div>
+                  <span class="badge badge-paid" id="res-stage-badge">LIBERADO NO CAIXA</span>
+                </div>
+                <div class="card-chip"></div>
+                <div style="font-family:monospace; font-size:17px; letter-spacing:2px; font-weight:800; margin-bottom:10px;" id="res-card-num">
+                  6060 8421 •••• 0000
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--gold-light);">
+                  <span>Limite: <strong id="res-limit">R$ 1.800,00</strong></span>
+                  <span>Voucher: <strong id="res-voucher">VCH-0000</strong></span>
+                  <span>PIN: <strong id="res-pin">1234</strong></span>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <a id="res-btn-app" href="/portal?id=1" target="_blank" class="btn btn-sm btn-outline" style="justify-content:center;">📱 Abrir App do Cliente</a>
+                <a href="/webpos" class="btn btn-sm btn-primary" style="justify-content:center;">🛒 Passar 1ª Compra</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila da Esteira em Tempo Real -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📋 Acompanhamento da Esteira ao Vivo</div>
+              <div class="card-subtitle">Sincronizado automaticamente com a Mesa de Crédito</div>
+            </div>
+            <div class="filter-pills">
+              <button class="filter-pill active" id="flt-all" onclick="setPipelineFilter('all')">Todas</button>
+              <button class="filter-pill" id="flt-mesa" onclick="setPipelineFilter('mesa')">Na Mesa</button>
+              <button class="filter-pill" id="flt-aprov" onclick="setPipelineFilter('aprov')">Aprovadas</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="table-wrap" style="max-height:380px; overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente / Biometria</th>
+                    <th>Status Esteira</th>
+                    <th>Limite / Voucher</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="colab-pipeline-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>
+    let STATE = null;
+    let FILTER = 'all';
+    let GENERATED_TOKEN = '4829';
+
+    function formatBRL(v) {
+      return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function showToast(msg) {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    function maskCpf(el) {
+      let v = el.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      el.value = v;
+    }
+
+    async function loadColabState() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin_view') === '1') {
+        document.getElementById('admin-back-btn').style.display = 'inline-flex';
+      }
+      const res = await fetch('/api/state');
+      STATE = await res.json();
+      updatePromoterKpis();
+      updateLimitPreview();
+      renderPipelineTable();
+    }
+
+    function updatePromoterKpis() {
+      if (!STATE) return;
+      const promoter = document.getElementById('colab-promoter').value;
+      const store = STATE.store || {};
+      const cCard = Number(store.comissao_promotor_brl || 6.0);
+      const cSeg = Number(store.comissao_seguro_brl || 3.5);
+
+      const mine = (STATE.leads || []).filter(l => l.promoter_name === promoter);
+      const approved = mine.filter(l => l.lead_stage === 'aprovado_sem_compra' || l.lead_stage === 'cartao_ativo');
+      const seguros = mine.filter(l => l.has_seguro_protegido);
+      const totalComm = (mine.length * cCard) + (seguros.length * cSeg);
+
+      document.getElementById('kpi-my-leads').textContent = `${mine.length} propostas`;
+      document.getElementById('kpi-my-approved').textContent = `${approved.length} clientes`;
+      document.getElementById('kpi-my-seguros').textContent = `${seguros.length} seguros`;
+      document.getElementById('kpi-my-commission').textContent = formatBRL(totalComm);
+    }
+
+    function consultarCpfBureau() {
+      const cpf = document.getElementById('reg-cpf').value.trim();
+      if (cpf.length < 11) {
+        showToast('⚠️ Digite um CPF válido para consultar no Birô.');
+        return;
+      }
+      const digits = cpf.replace(/\D/g, '');
+      const lastDigit = parseInt(digits.charAt(digits.length - 1) || '5', 10);
+      const score = 590 + (lastDigit * 32);
+      document.getElementById('reg-score').value = Math.min(960, score);
+
+      const box = document.getElementById('bureau-alert-box');
+      box.style.display = 'block';
+      box.innerHTML = `✔ <strong>CPF Regular na Receita Federal</strong> • Score Serasa Apurado: <strong>${Math.min(960, score)} pts</strong> • Sem restrições impeditivas.`;
+      updateLimitPreview();
+      showToast('🔍 Consulta Serasa concluída com sucesso!');
+    }
+
+    function sendSmsToken() {
+      GENERATED_TOKEN = String(Math.floor(1000 + Math.random() * 9000));
+      const box = document.getElementById('sms-token-box');
+      box.style.display = 'flex';
+      document.getElementById('sms-token-label').innerHTML = `📲 Token enviado (Teste: <strong>${GENERATED_TOKEN}</strong>)`;
+      document.getElementById('reg-sms-code').value = GENERATED_TOKEN;
+    }
+
+    function verifySmsToken() {
+      document.getElementById('sms-token-label').innerHTML = `✅ <strong>Celular Validado com Token OTP!</strong>`;
+      showToast('✅ Celular do cliente autenticado!');
+    }
+
+    function buscarCep() {
+      const cep = document.getElementById('reg-cep').value.replace(/\D/g, '');
+      const map = {
+        '01310100': 'Av. Paulista, 1578 - Bela Vista, São Paulo/SP',
+        '04543011': 'Av. Pres. Juscelino Kubitschek, 2041 - Vila Olímpia, São Paulo/SP'
+      };
+      document.getElementById('reg-address').value = map[cep] || `Rua das Palmeiras, 420 - Centro (CEP ${cep || '01310-100'}), São Paulo/SP`;
+      showToast('📍 Endereço preenchido pelo CEP!');
+    }
+
+    function updateLimitPreview() {
+      const income = parseFloat(document.getElementById('reg-income').value || '2500');
+      const score = parseInt(document.getElementById('reg-score').value || '650', 10);
+      const minScore = STATE?.store?.min_score_auto_approve || 550;
+      const badge = document.getElementById('limit-preview-badge');
+
+      if (score < 420) {
+        badge.textContent = 'Política: Risco Alto (Recusa)';
+        badge.className = 'badge badge-overdue-critical';
+      } else if (score < minScore) {
+        const lim = Math.round((income * 0.35) / 50) * 50;
+        badge.textContent = `Mesa de Crédito: ${formatBRL(lim)}`;
+        badge.className = 'badge badge-due-today';
+      } else {
+        const mult = score >= 750 ? 0.85 : 0.60;
+        const lim = Math.max(400, Math.round((income * mult) / 50) * 50);
+        badge.textContent = `Aprovação Automática: ${formatBRL(lim)}`;
+        badge.className = 'badge badge-paid';
+      }
+    }
+
+    async function startRealCamera() {
+      const v = document.getElementById('webcam-video');
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        v.srcObject = s;
+        v.style.display = 'block';
+      } catch (e) {
+        captureFacialBiometrics();
+      }
+    }
+
+    function captureFacialBiometrics() {
+      const score = (98.9 + Math.random() * 0.9).toFixed(1);
+      const status = `Aprovada (${score}% FaceMatch)`;
+      document.getElementById('reg-bio-status').value = status;
+      document.getElementById('bio-badge').textContent = `✔ ${status}`;
+      document.getElementById('bio-status-label').innerHTML = `✅ Biometria Facial Aprovada: <strong>${status}</strong>`;
+      showToast(`📸 Biometria Facial aprovada (${score}%)!`);
+    }
+
+    function captureDocOCR() {
+      document.getElementById('reg-doc-status').value = 'CNH / RG Validado via OCR';
+      showToast('🪪 Documento validado com sucesso!');
+    }
+
+    function fillDemoCustomer() {
+      const samples = [
+        { name: 'Beatriz Fontenelle', cpf: '394.812.708-45', rg: '42.918.203-1 SSP/SP', mother: 'Helena Fontenelle', wa: '5511988112233', email: 'beatriz.f@email.com.br', cep: '01310-100', addr: 'Av. Paulista, 1200 - Bela Vista, São Paulo/SP', occ: 'Assalariado CLT', comp: 'Hospital Albert Einstein', inc: 4200, score: 785 },
+        { name: 'Gustavo Mendonça', cpf: '418.920.318-82', rg: '38.102.944-X SSP/SP', mother: 'Sônia Mendonça', wa: '5511977445566', email: 'gustavo.m@email.com.br', cep: '04543-011', addr: 'Rua Funchal, 512 - Vila Olímpia, São Paulo/SP', occ: 'Autônomo / MEI', comp: 'GM Representações', inc: 3100, score: 665 }
+      ];
+      const p = samples[Math.floor(Math.random() * samples.length)];
+      document.getElementById('reg-cpf').value = p.cpf;
+      document.getElementById('reg-name').value = p.name;
+      document.getElementById('reg-rg').value = p.rg;
+      document.getElementById('reg-mother').value = p.mother;
+      document.getElementById('reg-whatsapp').value = p.wa;
+      document.getElementById('reg-email').value = p.email;
+      document.getElementById('reg-cep').value = p.cep;
+      document.getElementById('reg-address').value = p.addr;
+      document.getElementById('reg-occupation').value = p.occ;
+      document.getElementById('reg-company').value = p.comp;
+      document.getElementById('reg-income').value = p.inc;
+      document.getElementById('reg-score').value = p.score;
+      consultarCpfBureau();
+      captureFacialBiometrics();
+    }
+
+    function resetRegistrationForm() {
+      document.getElementById('reg-cpf').value = '';
+      document.getElementById('reg-name').value = '';
+      document.getElementById('reg-rg').value = '';
+      document.getElementById('reg-mother').value = '';
+      document.getElementById('reg-whatsapp').value = '';
+      document.getElementById('reg-email').value = '';
+      document.getElementById('reg-address').value = '';
+      document.getElementById('reg-company').value = '';
+      document.getElementById('bureau-alert-box').style.display = 'none';
+      document.getElementById('approved-card-result').style.display = 'none';
+    }
+
+    function addNewCollaborator() {
+      const name = prompt('Nome do Colaborador(a) Cadastrador:');
+      if (!name || !name.trim()) return;
+      const sel = document.getElementById('colab-promoter');
+      const opt = document.createElement('option');
+      opt.value = name.trim();
+      opt.textContent = `👤 ${name.trim()}`;
+      sel.appendChild(opt);
+      sel.value = name.trim();
+      updatePromoterKpis();
+      showToast(`👤 Colaborador(a) ${name.trim()} selecionado(a)!`);
+    }
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function submitCustomerToPipeline() {
+      const fullName = document.getElementById('reg-name').value.trim();
+      const cpf = document.getElementById('reg-cpf').value.trim();
+      if (!fullName || !cpf) {
+        showToast('⚠️ Preencha o CPF e o Nome Completo do cliente.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-esteira');
+      btn.disabled = true;
+      btn.textContent = '⏳ PROCESSANDO NA ESTEIRA DE CRÉDITO...';
+
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`st-${i}`);
+        el.classList.add('done');
+        document.getElementById(`st-${i}-b`).textContent = '✔ Validado';
+        document.getElementById(`st-${i}-b`).className = 'badge badge-paid';
+        await sleep(220);
+      }
+
+      const payload = {
+        full_name: fullName,
+        cpf: cpf,
+        rg_cnh: document.getElementById('reg-rg').value.trim() || '32.451.890-1 SSP/SP',
+        birth_date: document.getElementById('reg-birth').value,
+        mother_name: document.getElementById('reg-mother').value.trim() || 'Maria da Silva',
+        whatsapp: document.getElementById('reg-whatsapp').value.trim() || '5511988887777',
+        email: document.getElementById('reg-email').value.trim(),
+        occupation: document.getElementById('reg-occupation').value,
+        company_name: document.getElementById('reg-company').value.trim(),
+        address_summary: document.getElementById('reg-address').value.trim(),
+        declared_income: parseFloat(document.getElementById('reg-income').value || '2500'),
+        credit_score: parseInt(document.getElementById('reg-score').value || '680', 10),
+        due_day: parseInt(document.getElementById('reg-due-day').value || '15', 10),
+        card_pin: document.getElementById('reg-pin').value.trim() || '1234',
+        routing_mode: document.getElementById('reg-routing').value,
+        biometria_status: document.getElementById('reg-bio-status').value,
+        doc_status: document.getElementById('reg-doc-status').value,
+        has_seguro_protegido: document.getElementById('reg-seguro').checked,
+        has_sms_alerta: document.getElementById('reg-sms').checked,
+        store_branch: document.getElementById('colab-branch').value,
+        promoter_name: document.getElementById('colab-promoter').value
+      };
+
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      document.getElementById('approved-card-result').style.display = 'block';
+      document.getElementById('res-holder-name').textContent = fullName.toUpperCase();
+      document.getElementById('res-card-num').textContent = data.card_number_full;
+      document.getElementById('res-limit').textContent = formatBRL(data.approved_limit);
+      document.getElementById('res-voucher').textContent = data.voucher_code;
+      document.getElementById('res-pin').textContent = data.card_pin;
+      document.getElementById('res-btn-app').href = `/portal?id=${data.lead_id}`;
+
+      const badge = document.getElementById('engine-status-badge');
+      if (data.stage === 'aprovado_sem_compra') {
+        badge.textContent = '✔ APROVADO NA HORA';
+        badge.className = 'badge badge-paid';
+      } else if (data.stage === 'mesa_credito') {
+        badge.textContent = '🔎 NA MESA DE CRÉDITO';
+        badge.className = 'badge badge-due-today';
+      } else {
+        badge.textContent = '✕ RECUSADO';
+        badge.className = 'badge badge-overdue-critical';
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🚀 CADASTRAR CLIENTE & ENVIAR PARA A ESTEIRA DE CRÉDITO';
+      showToast(`✅ Cliente ${fullName} processado na Esteira de Crédito!`);
+      await loadColabState();
+    }
+
+    function setPipelineFilter(f) {
+      FILTER = f;
+      document.getElementById('flt-all').classList.toggle('active', f === 'all');
+      document.getElementById('flt-mesa').classList.toggle('active', f === 'mesa');
+      document.getElementById('flt-aprov').classList.toggle('active', f === 'aprov');
+      renderPipelineTable();
+    }
+
+    function renderPipelineTable() {
+      if (!STATE) return;
+      let list = STATE.leads || [];
+      if (FILTER === 'mesa') list = list.filter(l => l.lead_stage === 'mesa_credito' || l.lead_stage === 'novo_lead');
+      if (FILTER === 'aprov') list = list.filter(l => l.lead_stage === 'aprovado_sem_compra' || l.lead_stage === 'cartao_ativo');
+
+      const mapBadge = {
+        mesa_credito: '<span class="badge badge-due-today">🔎 Em Análise (Mesa)</span>',
+        novo_lead: '<span class="badge badge-preventive">🆕 Captado</span>',
+        aprovado_sem_compra: '<span class="badge badge-agreement">🎫 Voucher Emitido</span>',
+        cartao_ativo: '<span class="badge badge-paid">💳 Cartão Ativo</span>',
+        bloqueado_atraso: '<span class="badge badge-overdue-critical">🔒 Bloqueado</span>',
+        recusado: '<span class="badge badge-overdue-critical">✕ Recusado</span>'
+      };
+
+      const tbody = document.getElementById('colab-pipeline-tbody');
+      tbody.innerHTML = list.map(l => `
+        <tr>
+          <td>
+            <div style="font-weight:700; color:#fff;">${l.full_name}</div>
+            <div style="font-size:11px; color:#94a3b8;">CPF: ${l.cpf} • Score: ${l.credit_score} pts</div>
+          </td>
+          <td>${mapBadge[l.lead_stage] || l.lead_stage}</td>
+          <td>
+            <div style="font-weight:800; color:var(--gold-light);">${formatBRL(l.approved_limit)}</div>
+            <div style="font-size:11px; color:#94a3b8;"><code>${l.voucher_code}</code> • PIN <code>${l.card_pin}</code></div>
+          </td>
+          <td>
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              ${l.lead_stage === 'mesa_credito' || l.lead_stage === 'novo_lead' ? `
+                <button class="btn btn-sm btn-primary" onclick="approveInPipeline(${l.id}, 'aprovado_sem_compra')">✔ Aprovar</button>
+              ` : ''}
+              <a href="/portal?id=${l.id}" target="_blank" class="btn btn-sm btn-outline">📱 App</a>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function approveInPipeline(leadId, stage) {
+      await fetch('/api/leads/stage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId, stage })
+      });
+      showToast('✔ Proposta aprovada e Voucher liberado!');
+      await loadColabState();
+    }
+
+    let LAST_DB_VER = null;
+    async function pollColabLiveSync() {
+      try {
+        const r = await fetch('/api/sync-version');
+        if (!r.ok) return;
+        const d = await r.json();
+        if (LAST_DB_VER && LAST_DB_VER !== d.db_version) {
+          LAST_DB_VER = d.db_version;
+          const tag = document.activeElement?.tagName;
+          if (tag !== 'INPUT' && tag !== 'SELECT') await loadColabState();
+        } else if (!LAST_DB_VER) {
+          LAST_DB_VER = d.db_version;
+        }
+      } catch (e) {}
+    }
+
+    function submitColabLogin() {
+      const b = document.getElementById('login-colab-branch').value;
+      const u = document.getElementById('login-colab-user').value;
+      document.getElementById('colab-branch').value = b;
+      document.getElementById('colab-promoter').value = u;
+      sessionStorage.setItem('prime_colab_logged', '1');
+      document.getElementById('colab-login-overlay').style.display = 'none';
+      updatePromoterKpis();
+      showToast(`🔓 Bem-vindo(a), ${u}!`);
+    }
+
+    function logoutColab() {
+      sessionStorage.removeItem('prime_colab_logged');
+      document.getElementById('colab-login-overlay').style.display = 'flex';
+      showToast('🔒 Sessão do colaborador encerrada.');
+    }
+
+    async function naturalKeepAliveColab10Min() {
+      try {
+        const r = await fetch('/api/sync-version?keepalive=1&cycle=10min', { cache: 'no-store' });
+        if (r.ok) {
+          const d = await r.json();
+          if (d.external_links) {
+            Object.values(d.external_links).forEach(u => {
+              if (u && u.startsWith('https://')) {
+                fetch(`${u}/api/sync-version?keepalive=1`, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+              }
+            });
+          }
+        }
+        await loadColabState();
+      } catch (e) {}
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.search.includes('dual_preview=1') || sessionStorage.getItem('prime_colab_logged') === '1') {
+        document.getElementById('colab-login-overlay').style.display = 'none';
+      }
+      loadColabState();
+      setInterval(pollColabLiveSync, 2200);
+      setInterval(naturalKeepAliveColab10Min, 45000);
+      setInterval(naturalKeepAliveColab10Min, 600000);
+    });
+  </script>
+</body>
+</html>
