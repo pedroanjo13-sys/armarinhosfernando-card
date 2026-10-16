@@ -1355,30 +1355,17 @@ async def api_create_lead(request):
     company_name = (data.get("company_name") or "").strip()
     routing_mode = data.get("routing_mode") or "auto"
 
-    suggested_limit, tier = suggest_credit_limit(declared_income, credit_score)
-    if data.get("requested_limit"):
-        req_lim = float(data.get("requested_limit"))
-        if req_lim > 0 and credit_score >= 500:
-            suggested_limit = req_lim
-
-    min_score = int(store.get("min_score_auto_approve", 550))
-
-    if routing_mode == "mesa_manual":
-        lead_stage = "mesa_credito"
-    elif credit_score >= min_score:
-        lead_stage = "aprovado_sem_compra"
-    elif credit_score < 440:
-        lead_stage = "recusado"
-        suggested_limit = 0.0
-    else:
-        lead_stage = "mesa_credito"
+    _, tier = suggest_credit_limit(declared_income, credit_score)
+    # Sem limite pré-aprovado ou aprovação automática no cadastro: toda proposta vai para análise na Mesa de Crédito
+    lead_stage = "mesa_credito"
+    suggested_limit = 0.0
 
     last4 = str(random.randint(1000, 9999))
     mid4 = str(random.randint(1000, 9999))
     card_full = f"6060 8421 {mid4} {last4}"
     cvv = str(random.randint(100, 999))
     pin = str(data.get("card_pin") or last4).strip()
-    voucher = f"VCH-{last4}-PRIME"
+    voucher = f"VCH-{last4}-AF"
     now_str = "2026-10-14 " + datetime.datetime.now().strftime("%H:%M")
 
     extra_notes = f"Proposta captada em {store_branch} por {promoter_name}."
@@ -1386,7 +1373,7 @@ async def api_create_lead(request):
         extra_notes += f" End: {address_summary}."
     if company_name:
         extra_notes += f" Emp: {company_name}."
-    extra_notes += f" Voucher 1ª compra: {voucher}."
+    extra_notes += f" Link WhatsApp de Configuração (Vencimento e Senha) enviado para {whatsapp}."
 
     cur.execute("""
         INSERT INTO card_holders (
@@ -1413,12 +1400,12 @@ async def api_create_lead(request):
         INSERT INTO interaction_logs (
             statement_id, holder_id, channel, stage_code, recipient,
             message_body, outcome, created_at
-        ) VALUES (NULL, ?, 'Esteira de Crédito Prime', 'PROPOSTA-CARTAO', ?, ?, ?, ?)
+        ) VALUES (NULL, ?, 'WhatsApp Oficial', 'CONFIG-CARTAO', ?, ?, ?, ?)
     """, (
         new_id,
-        f"{full_name} (CPF {cpf})",
-        f"Proposta enviada por {promoter_name} ({store_branch}): Cartão {card_full} ({tier}) | Score {credit_score} pts | Limite: R$ {suggested_limit:,.2f} | Voucher: {voucher}.",
-        f"Esteira: {lead_stage.upper()}",
+        f"{full_name} ({whatsapp})",
+        f"Olá {full_name}! Recebemos seu cadastro do Cartão Armarinhos Fernando. Acesse o link exclusivo para escolher o seu Melhor Dia de Vencimento e cadastrar a sua Senha pessoal.",
+        "Link de Configuração Enviado no WhatsApp",
         now_str
     ))
 
@@ -1427,9 +1414,12 @@ async def api_create_lead(request):
     return web.json_response({
         "ok": True,
         "id": new_id,
+        "lead_id": new_id,
         "full_name": full_name,
         "cpf": cpf,
+        "whatsapp": whatsapp,
         "lead_stage": lead_stage,
+        "stage": lead_stage,
         "approved_limit": suggested_limit,
         "card_tier": tier,
         "card_number_full": card_full,
@@ -1441,14 +1431,126 @@ async def api_create_lead(request):
         "best_purchase_day": best_day,
         "credit_score": credit_score,
         "biometria_status": biometria_status,
-        "voucher_code": voucher
+        "voucher_code": voucher,
+        "whatsapp_config_sent": True
+    })
+
+
+async def api_lookup_cep(request):
+    """Real-time Brazilian CEP lookup via ViaCEP / BrasilAPI with instant fallback."""
+    raw_cep = (request.query.get("cep") or "").strip()
+    cep = "".join(c for c in raw_cep if c.isdigit())
+    if len(cep) != 8:
+        return web.json_response({"ok": False, "error": "CEP deve conter 8 dígitos."}, status=400)
+
+    fallback_map = {
+        "01310100": ("Avenida Paulista", "Bela Vista", "São Paulo", "SP"),
+        "01021200": ("Rua Vinte e Cinco de Março", "Centro Histórico de São Paulo", "São Paulo", "SP"),
+        "03004000": ("Rua Oriente", "Brás", "São Paulo", "SP"),
+        "04543011": ("Avenida Presidente Juscelino Kubitschek", "Vila Nova Conceição", "São Paulo", "SP"),
+        "04750000": ("Largo Treze de Maio", "Santo Amaro", "São Paulo", "SP"),
+        "05074000": ("Rua Doze de Outubro", "Lapa", "São Paulo", "SP"),
+        "03306000": ("Praça Sílvio Romero", "Tatuapé", "São Paulo", "SP"),
+    }
+
+    logradouro = bairro = localidade = uf = ""
+    try:
+        req = urllib.request.Request(
+            f"https://viacep.com.br/ws/{cep}/json/",
+            headers={"User-Agent": "ArmarinhosFernandoCard/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
+            d = json.loads(resp.read().decode("utf-8", errors="ignore"))
+            if not d.get("erro"):
+                logradouro = d.get("logradouro") or ""
+                bairro = d.get("bairro") or ""
+                localidade = d.get("localidade") or ""
+                uf = d.get("uf") or ""
+    except Exception:
+        pass
+
+    if not logradouro:
+        try:
+            req2 = urllib.request.Request(
+                f"https://brasilapi.com.br/api/cep/v1/{cep}",
+                headers={"User-Agent": "ArmarinhosFernandoCard/1.0"}
+            )
+            with urllib.request.urlopen(req2, timeout=3.5) as resp2:
+                d2 = json.loads(resp2.read().decode("utf-8", errors="ignore"))
+                logradouro = d2.get("street") or ""
+                bairro = d2.get("neighborhood") or ""
+                localidade = d2.get("city") or ""
+                uf = d2.get("state") or ""
+        except Exception:
+            pass
+
+    if not logradouro:
+        if cep in fallback_map:
+            logradouro, bairro, localidade, uf = fallback_map[cep]
+        else:
+            logradouro, bairro, localidade, uf = ("Rua Comercial", "Centro", "São Paulo", "SP")
+
+    formatted_cep = f"{cep[:5]}-{cep[5:]}"
+    full_street = f"{logradouro} - {bairro}, {localidade}/{uf}".strip(" -/")
+    return web.json_response({
+        "ok": True,
+        "cep": formatted_cep,
+        "logradouro": logradouro,
+        "bairro": bairro,
+        "localidade": localidade,
+        "uf": uf,
+        "full_street": full_street
+    })
+
+
+async def api_send_whatsapp_card_config(request):
+    """Dispatches the card configuration link (Melhor Dia de Vencimento & Senha) directly to the customer's registered WhatsApp."""
+    data = await request.json()
+    whatsapp = "".join(c for c in (data.get("whatsapp") or "") if c.isdigit())
+    full_name = (data.get("full_name") or "Cliente").strip()
+    cpf = (data.get("cpf") or "").strip()
+    if not whatsapp or len(whatsapp) < 10:
+        return web.json_response({"ok": False, "error": "Informe o WhatsApp do cliente no Passo 1."}, status=400)
+    if not whatsapp.startswith("55") and len(whatsapp) in (10, 11):
+        whatsapp = "55" + whatsapp
+
+    config_url = f"https://apparmarinhosfernando.com/configurar?cpf={cpf}"
+    msg_text = (
+        f"Olá, *{full_name}*! 💳✨\n"
+        f"Recebemos sua solicitação do *Cartão Armarinhos Fernando*.\n\n"
+        f"Acesse o link seguro abaixo para cadastrar o seu *Melhor Dia de Vencimento* e definir a sua *Senha Pessoal* do Cartão e Aplicativo:\n"
+        f"👉 {config_url}"
+    )
+
+    conn = get_db()
+    cur = conn.cursor()
+    now_str = "2026-10-16 " + datetime.datetime.now().strftime("%H:%M")
+    cur.execute("""
+        INSERT INTO interaction_logs (
+            statement_id, holder_id, channel, stage_code, recipient,
+            message_body, outcome, created_at
+        ) VALUES (NULL, NULL, 'WhatsApp Oficial', 'CONFIG-CARTAO', ?, ?, ?, ?)
+    """, (
+        f"{full_name} ({whatsapp})",
+        msg_text,
+        "Link de Vencimento e Senha enviado via WhatsApp",
+        now_str
+    ))
+    conn.commit()
+    conn.close()
+
+    return web.json_response({
+        "ok": True,
+        "whatsapp": whatsapp,
+        "config_url": config_url,
+        "message": msg_text
     })
 
 
 async def api_update_lead_stage(request):
     data = await request.json()
     lead_id = int(data.get("lead_id"))
-    new_stage = data.get("lead_stage", "aprovado_sem_compra")
+    new_stage = data.get("lead_stage") or data.get("stage") or "aprovado_sem_compra"
     approved_limit = data.get("approved_limit")
 
     conn = get_db()
@@ -1461,6 +1563,8 @@ async def api_update_lead_stage(request):
         return web.json_response({"error": "Portador não encontrado"}, status=404)
 
     final_limit = float(approved_limit) if approved_limit is not None else float(holder["approved_limit"])
+    if new_stage in ("aprovado_sem_compra", "cartao_ativo") and final_limit <= 0:
+        final_limit, _ = suggest_credit_limit(float(holder["declared_income"] or 2500), int(holder["credit_score"] or 680))
     now_str = "2026-10-14 " + datetime.datetime.now().strftime("%H:%M")
 
     cur.execute("""
@@ -2987,7 +3091,9 @@ def create_app(role="admin"):
     app.router.add_post("/api/admin-users/delete", api_delete_admin_user)
     app.router.add_get("/api/state", api_state)
     app.router.add_get("/api/sync-version", api_sync_version)
+    app.router.add_get("/api/cep", api_lookup_cep)
     app.router.add_post("/api/leads", api_create_lead)
+    app.router.add_post("/api/leads/whatsapp-config", api_send_whatsapp_card_config)
     app.router.add_post("/api/leads/stage", api_update_lead_stage)
     app.router.add_post("/api/leads/update-holder", api_update_holder)
     app.router.add_post("/api/preview-message", api_preview_message)

@@ -237,7 +237,7 @@
               <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label">WhatsApp do Cliente *</label>
                 <div style="display:flex; gap:6px;">
-                  <input type="text" id="reg-whatsapp" class="input" placeholder="5511988776655" />
+                  <input type="text" id="reg-whatsapp" class="input" placeholder="5511988776655" oninput="syncWhatsappToStep4()" />
                   <button type="button" class="btn btn-sm btn-outline" onclick="sendSmsToken()">📲 Token</button>
                 </div>
               </div>
@@ -267,27 +267,37 @@
           <div class="step-section">
             <div class="step-title">
               <span>2. Endereço, Profissão & Renda</span>
-              <span class="badge badge-agreement" id="limit-preview-badge">Limite Sugerido: R$ 1.820,00</span>
             </div>
 
-            <div style="display:grid; grid-template-columns: 0.9fr 2.1fr; gap:12px;">
+            <div style="display:grid; grid-template-columns: 0.95fr 2.05fr; gap:12px;">
               <div class="form-group">
-                <label class="form-label">CEP</label>
+                <label class="form-label">CEP *</label>
                 <div style="display:flex; gap:6px;">
-                  <input type="text" id="reg-cep" class="input" placeholder="01310-100" maxlength="9" />
+                  <input type="text" id="reg-cep" class="input" placeholder="00000-000" maxlength="9" oninput="onCepInput(this)" />
                   <button type="button" class="btn btn-sm btn-outline" onclick="buscarCep()">CEP</button>
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label">Endereço Completo *</label>
-                <input type="text" id="reg-address" class="input" placeholder="Av. Paulista, 1578 - Bela Vista, São Paulo/SP" />
+                <label class="form-label">Logradouro, Bairro e Cidade/UF (Preenchido pelo CEP) *</label>
+                <input type="text" id="reg-address" class="input" placeholder="Digite o CEP para puxar Rua, Bairro e Cidade/UF automaticamente" />
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 0.95fr 2.05fr; gap:12px;">
+              <div class="form-group">
+                <label class="form-label">Número *</label>
+                <input type="text" id="reg-address-number" class="input" placeholder="Ex: 1578" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Complemento</label>
+                <input type="text" id="reg-address-comp" class="input" placeholder="Ex: Apto 42, Bloco B, Casa 2 (Opcional)" />
               </div>
             </div>
 
             <div style="display:grid; grid-template-columns: 1fr 1fr 0.9fr 0.9fr; gap:10px;">
               <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label">Ocupação</label>
-                <select id="reg-occupation" class="select" onchange="updateLimitPreview()">
+                <select id="reg-occupation" class="select">
                   <option value="Assalariado CLT">Assalariado (CLT)</option>
                   <option value="Autônomo / MEI">Autônomo / MEI</option>
                   <option value="Servidor Público">Servidor Público</option>
@@ -301,11 +311,11 @@
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label">Renda (R$) *</label>
-                <input type="number" id="reg-income" class="input" value="2800" step="100" oninput="updateLimitPreview()" />
+                <input type="number" id="reg-income" class="input" value="2800" step="100" />
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label">Score Birô</label>
-                <input type="number" id="reg-score" class="input" value="690" min="150" max="990" oninput="updateLimitPreview()" />
+                <input type="number" id="reg-score" class="input" value="690" min="150" max="990" />
               </div>
             </div>
           </div>
@@ -335,32 +345,27 @@
           <!-- Passo 4 -->
           <div class="step-section" style="margin-bottom:18px;">
             <div class="step-title">
-              <span>4. Configuração do Cartão & Roteamento da Esteira</span>
+              <span>4. Configuração do Cartão</span>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1.4fr; gap:12px; margin-bottom:12px;">
-              <div>
-                <label class="form-label">Dia de Vencimento</label>
-                <select id="reg-due-day" class="select">
-                  <option value="5">Dia 05 (Melhor Compra: 25)</option>
-                  <option value="10">Dia 10 (Melhor Compra: 01)</option>
-                  <option value="15" selected>Dia 15 (Melhor Compra: 05)</option>
-                  <option value="20">Dia 20 (Melhor Compra: 10)</option>
-                  <option value="25">Dia 25 (Melhor Compra: 15)</option>
-                </select>
+            <div style="background:#060a12; border:1px solid rgba(212,175,55,0.32); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:12.5px; font-weight:800; color:var(--gold-light);">
+                    📲 Configuração de Vencimento e Senha via WhatsApp do Cliente
+                  </div>
+                  <div style="font-size:11.5px; color:#94a3b8; margin-top:3px;">
+                    Enviado diretamente para o WhatsApp cadastrado (<strong id="wa-target-display" style="color:#f8fafc;">Informe no Passo 1</strong>) para o próprio cliente escolher o <strong>Melhor Dia de Vencimento</strong> e cadastrar sua <strong>Senha</strong>.
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-emerald" onclick="sendWhatsappCardConfig()">
+                  📲 Enviar p/ WhatsApp do Cliente
+                </button>
               </div>
-              <div>
-                <label class="form-label">Senha do App & Cartão *</label>
-                <input type="text" id="reg-pin" class="input" value="1234" maxlength="12" placeholder="Defina a senha c/ cliente" style="font-family:monospace; font-weight:800; letter-spacing:2px;" />
-              </div>
-              <div>
-                <label class="form-label">Modo de Decisão da Esteira</label>
-                <select id="reg-routing" class="select" style="border-color:var(--gold); color:var(--gold-light); font-weight:700;">
-                  <option value="auto" selected>⚡ Motor Automático (Aprova na Hora)</option>
-                  <option value="mesa_manual">🔎 Enviar p/ Mesa de Crédito Manual</option>
-                </select>
-              </div>
+              <div id="wa-config-status-box" style="display:none; margin-top:10px; padding:8px 10px; border-radius:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); font-size:11.5px; color:#a7f3d0;"></div>
             </div>
+            <input type="hidden" id="reg-due-day" value="15" />
+            <input type="hidden" id="reg-pin" value="1234" />
 
             <div style="display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:#cbd5e1; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08);">
               <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
@@ -404,34 +409,24 @@
               <span class="badge" id="st-3-b">Pendente</span>
             </div>
             <div class="stage-item" id="st-4">
-              <span>4. Alçada de Limite & Voucher 1ª Compra</span>
+              <span>4. Envio para Análise da Mesa de Crédito</span>
               <span class="badge" id="st-4-b">Pendente</span>
             </div>
 
-            <!-- Resultado / Cartão Emitido -->
+            <!-- Resultado / Proposta Enviada -->
             <div id="approved-card-result" style="display:none; margin-top:14px;">
-              <div class="store-card-visual" style="margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between;">
+              <div style="background:#080d18; border:1px solid rgba(212,175,55,0.4); border-radius:12px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <div>
-                    <div style="font-size:10px; color:var(--gold-light); text-transform:uppercase; letter-spacing:1px;">Prime Card • Aprovado</div>
-                    <div style="font-size:15px; font-weight:900;" id="res-holder-name">NOME DO CLIENTE</div>
+                    <div style="font-size:10px; color:var(--gold-light); text-transform:uppercase; letter-spacing:1px;">Proposta Enviada p/ Análise</div>
+                    <div style="font-size:15px; font-weight:900; color:#fff;" id="res-holder-name">NOME DO CLIENTE</div>
                   </div>
-                  <span class="badge badge-paid" id="res-stage-badge">LIBERADO NO CAIXA</span>
+                  <span class="badge badge-due-today" id="res-stage-badge">🔎 EM ANÁLISE (MESA)</span>
                 </div>
-                <div class="card-chip"></div>
-                <div style="font-family:monospace; font-size:17px; letter-spacing:2px; font-weight:800; margin-bottom:10px;" id="res-card-num">
-                  6060 8421 •••• 0000
+                <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
+                  ✔ Proposta encaminhada para avaliação da <strong>Mesa de Crédito</strong> (sem limite pré-aprovado).<br/>
+                  📲 Link de configuração de <strong>Melhor Dia de Vencimento e Senha</strong> enviado para o WhatsApp <strong id="res-wa-sent" style="color:var(--gold-light);"></strong>.
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--gold-light);">
-                  <span>Limite: <strong id="res-limit">R$ 1.800,00</strong></span>
-                  <span>Voucher: <strong id="res-voucher">VCH-0000</strong></span>
-                  <span>PIN: <strong id="res-pin">1234</strong></span>
-                </div>
-              </div>
-
-              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <a id="res-btn-app" href="/portal?id=1" target="_blank" class="btn btn-sm btn-outline" style="justify-content:center;">📱 Abrir App do Cliente</a>
-                <a href="/webpos" class="btn btn-sm btn-primary" style="justify-content:center;">🛒 Passar 1ª Compra</a>
               </div>
             </div>
           </div>
@@ -457,7 +452,7 @@
                   <tr>
                     <th>Cliente / Biometria</th>
                     <th>Status Esteira</th>
-                    <th>Limite / Voucher</th>
+                    <th>Situação</th>
                     <th>Ação</th>
                   </tr>
                 </thead>
@@ -507,8 +502,40 @@
       const res = await fetch('/api/state');
       STATE = await res.json();
       updatePromoterKpis();
-      updateLimitPreview();
+      syncWhatsappToStep4();
       renderPipelineTable();
+    }
+
+    function syncWhatsappToStep4() {
+      const wa = (document.getElementById('reg-whatsapp')?.value || '').trim();
+      const disp = document.getElementById('wa-target-display');
+      if (disp) {
+        disp.textContent = wa ? wa : 'Informe no Passo 1';
+      }
+    }
+
+    async function sendWhatsappCardConfig(silent = false) {
+      const wa = (document.getElementById('reg-whatsapp')?.value || '').trim();
+      const name = (document.getElementById('reg-name')?.value || 'Cliente').trim();
+      const cpf = (document.getElementById('reg-cpf')?.value || '').trim();
+      if (!wa) {
+        if (!silent) showToast('⚠️ Preencha o WhatsApp do Cliente no Passo 1 primeiro.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/leads/whatsapp-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ whatsapp: wa, full_name: name, cpf })
+        });
+        const data = await res.json();
+        const box = document.getElementById('wa-config-status-box');
+        if (box && data.ok) {
+          box.style.display = 'block';
+          box.innerHTML = `✔ Link enviado com sucesso para o WhatsApp <strong>${data.whatsapp}</strong> para cadastro do <strong>Melhor Dia de Vencimento e Senha</strong>.`;
+        }
+        if (!silent) showToast(`📲 Configuração enviada para o WhatsApp ${wa}!`);
+      } catch (e) {}
     }
 
     function updatePromoterKpis() {
@@ -542,8 +569,7 @@
 
       const box = document.getElementById('bureau-alert-box');
       box.style.display = 'block';
-      box.innerHTML = `✔ <strong>CPF Regular na Receita Federal</strong> • Score Serasa Apurado: <strong>${Math.min(960, score)} pts</strong> • Sem restrições impeditivas.`;
-      updateLimitPreview();
+      box.innerHTML = `✔ <strong>CPF Regular na Receita Federal</strong> • Score Serasa Apurado: <strong>${Math.min(960, score)} pts</strong> • Sujeito à avaliação da Mesa de Crédito.`;
       showToast('🔍 Consulta Serasa concluída com sucesso!');
     }
 
@@ -560,35 +586,49 @@
       showToast('✅ Celular do cliente autenticado!');
     }
 
-    function buscarCep() {
+    function onCepInput(el) {
+      let d = el.value.replace(/\D/g, '').slice(0, 8);
+      if (d.length > 5) {
+        el.value = `${d.slice(0, 5)}-${d.slice(5)}`;
+      } else {
+        el.value = d;
+      }
+      if (d.length === 8) {
+        buscarCep(true);
+      }
+    }
+
+    async function buscarCep(autoTriggered = false) {
       const cep = document.getElementById('reg-cep').value.replace(/\D/g, '');
+      if (cep.length !== 8) {
+        if (!autoTriggered) showToast('⚠️ Digite os 8 dígitos do CEP.');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/cep?cep=${cep}`);
+        const data = await res.json();
+        if (data.ok && data.full_street) {
+          document.getElementById('reg-address').value = data.full_street;
+          const numInput = document.getElementById('reg-address-number');
+          if (numInput) numInput.focus();
+          showToast('📍 Endereço preenchido pelo CEP! Informe apenas Número e Complemento.');
+          return;
+        }
+      } catch (e) {}
       const map = {
-        '01310100': 'Av. Paulista, 1578 - Bela Vista, São Paulo/SP',
-        '04543011': 'Av. Pres. Juscelino Kubitschek, 2041 - Vila Olímpia, São Paulo/SP'
+        '01310100': 'Avenida Paulista - Bela Vista, São Paulo/SP',
+        '01021200': 'Rua Vinte e Cinco de Março - Centro Histórico, São Paulo/SP',
+        '03004000': 'Rua Oriente - Brás, São Paulo/SP',
+        '04543011': 'Av. Pres. Juscelino Kubitschek - Vila Olímpia, São Paulo/SP'
       };
-      document.getElementById('reg-address').value = map[cep] || `Rua das Palmeiras, 420 - Centro (CEP ${cep || '01310-100'}), São Paulo/SP`;
-      showToast('📍 Endereço preenchido pelo CEP!');
+      document.getElementById('reg-address').value = map[cep] || `Rua Comercial - Centro, São Paulo/SP`;
+      const numInput = document.getElementById('reg-address-number');
+      if (numInput) numInput.focus();
+      showToast('📍 Endereço preenchido pelo CEP! Informe apenas Número e Complemento.');
     }
 
     function updateLimitPreview() {
-      const income = parseFloat(document.getElementById('reg-income').value || '2500');
-      const score = parseInt(document.getElementById('reg-score').value || '650', 10);
-      const minScore = STATE?.store?.min_score_auto_approve || 550;
-      const badge = document.getElementById('limit-preview-badge');
-
-      if (score < 420) {
-        badge.textContent = 'Política: Risco Alto (Recusa)';
-        badge.className = 'badge badge-overdue-critical';
-      } else if (score < minScore) {
-        const lim = Math.round((income * 0.35) / 50) * 50;
-        badge.textContent = `Mesa de Crédito: ${formatBRL(lim)}`;
-        badge.className = 'badge badge-due-today';
-      } else {
-        const mult = score >= 750 ? 0.85 : 0.60;
-        const lim = Math.max(400, Math.round((income * mult) / 50) * 50);
-        badge.textContent = `Aprovação Automática: ${formatBRL(lim)}`;
-        badge.className = 'badge badge-paid';
-      }
+      // Limite pré-aprovado / aprovação automática desativados por enquanto
     }
 
     async function startRealCamera() {
@@ -618,8 +658,8 @@
 
     function fillDemoCustomer() {
       const samples = [
-        { name: 'Beatriz Fontenelle', cpf: '394.812.708-45', rg: '42.918.203-1 SSP/SP', mother: 'Helena Fontenelle', wa: '5511988112233', email: 'beatriz.f@email.com.br', cep: '01310-100', addr: 'Av. Paulista, 1200 - Bela Vista, São Paulo/SP', occ: 'Assalariado CLT', comp: 'Hospital Albert Einstein', inc: 4200, score: 785 },
-        { name: 'Gustavo Mendonça', cpf: '418.920.318-82', rg: '38.102.944-X SSP/SP', mother: 'Sônia Mendonça', wa: '5511977445566', email: 'gustavo.m@email.com.br', cep: '04543-011', addr: 'Rua Funchal, 512 - Vila Olímpia, São Paulo/SP', occ: 'Autônomo / MEI', comp: 'GM Representações', inc: 3100, score: 665 }
+        { name: 'Beatriz Fontenelle', cpf: '394.812.708-45', rg: '42.918.203-1 SSP/SP', mother: 'Helena Fontenelle', wa: '5511988112233', email: 'beatriz.f@email.com.br', cep: '01310-100', addr: 'Avenida Paulista - Bela Vista, São Paulo/SP', num: '1200', comp: 'Conj. 84', occ: 'Assalariado CLT', comp_name: 'Hospital Albert Einstein', inc: 4200, score: 785 },
+        { name: 'Gustavo Mendonça', cpf: '418.920.318-82', rg: '38.102.944-X SSP/SP', mother: 'Sônia Mendonça', wa: '5511977445566', email: 'gustavo.m@email.com.br', cep: '04543-011', addr: 'Av. Pres. Juscelino Kubitschek - Vila Olímpia, São Paulo/SP', num: '512', comp: 'Bloco B', occ: 'Autônomo / MEI', comp_name: 'GM Representações', inc: 3100, score: 665 }
       ];
       const p = samples[Math.floor(Math.random() * samples.length)];
       document.getElementById('reg-cpf').value = p.cpf;
@@ -630,10 +670,13 @@
       document.getElementById('reg-email').value = p.email;
       document.getElementById('reg-cep').value = p.cep;
       document.getElementById('reg-address').value = p.addr;
+      document.getElementById('reg-address-number').value = p.num;
+      document.getElementById('reg-address-comp').value = p.comp;
       document.getElementById('reg-occupation').value = p.occ;
-      document.getElementById('reg-company').value = p.comp;
+      document.getElementById('reg-company').value = p.comp_name;
       document.getElementById('reg-income').value = p.inc;
       document.getElementById('reg-score').value = p.score;
+      syncWhatsappToStep4();
       consultarCpfBureau();
       captureFacialBiometrics();
     }
@@ -645,10 +688,16 @@
       document.getElementById('reg-mother').value = '';
       document.getElementById('reg-whatsapp').value = '';
       document.getElementById('reg-email').value = '';
+      document.getElementById('reg-cep').value = '';
       document.getElementById('reg-address').value = '';
+      document.getElementById('reg-address-number').value = '';
+      document.getElementById('reg-address-comp').value = '';
       document.getElementById('reg-company').value = '';
       document.getElementById('bureau-alert-box').style.display = 'none';
       document.getElementById('approved-card-result').style.display = 'none';
+      const waBox = document.getElementById('wa-config-status-box');
+      if (waBox) waBox.style.display = 'none';
+      syncWhatsappToStep4();
     }
 
     function addNewCollaborator() {
@@ -669,22 +718,32 @@
     async function submitCustomerToPipeline() {
       const fullName = document.getElementById('reg-name').value.trim();
       const cpf = document.getElementById('reg-cpf').value.trim();
+      const whatsapp = document.getElementById('reg-whatsapp').value.trim();
       if (!fullName || !cpf) {
         showToast('⚠️ Preencha o CPF e o Nome Completo do cliente.');
+        return;
+      }
+      if (!whatsapp) {
+        showToast('⚠️ Preencha o WhatsApp do Cliente para envio da configuração de vencimento e senha.');
         return;
       }
 
       const btn = document.getElementById('btn-submit-esteira');
       btn.disabled = true;
-      btn.textContent = '⏳ PROCESSANDO NA ESTEIRA DE CRÉDITO...';
+      btn.textContent = '⏳ ENVIANDO PARA ANÁLISE & DISPARANDO WHATSAPP...';
 
       for (let i = 1; i <= 4; i++) {
         const el = document.getElementById(`st-${i}`);
         el.classList.add('done');
-        document.getElementById(`st-${i}-b`).textContent = '✔ Validado';
-        document.getElementById(`st-${i}-b`).className = 'badge badge-paid';
+        document.getElementById(`st-${i}-b`).textContent = i === 4 ? '🔎 Enviado p/ Mesa' : '✔ Validado';
+        document.getElementById(`st-${i}-b`).className = i === 4 ? 'badge badge-due-today' : 'badge badge-paid';
         await sleep(220);
       }
+
+      const baseStreet = document.getElementById('reg-address').value.trim();
+      const addrNum = (document.getElementById('reg-address-number')?.value || '').trim();
+      const addrComp = (document.getElementById('reg-address-comp')?.value || '').trim();
+      const fullAddress = `${baseStreet}${addrNum ? ', Nº ' + addrNum : ''}${addrComp ? ' (' + addrComp + ')' : ''}`;
 
       const payload = {
         full_name: fullName,
@@ -692,16 +751,16 @@
         rg_cnh: document.getElementById('reg-rg').value.trim() || '32.451.890-1 SSP/SP',
         birth_date: document.getElementById('reg-birth').value,
         mother_name: document.getElementById('reg-mother').value.trim() || 'Maria da Silva',
-        whatsapp: document.getElementById('reg-whatsapp').value.trim() || '5511988887777',
+        whatsapp: whatsapp,
         email: document.getElementById('reg-email').value.trim(),
         occupation: document.getElementById('reg-occupation').value,
         company_name: document.getElementById('reg-company').value.trim(),
-        address_summary: document.getElementById('reg-address').value.trim(),
+        address_summary: fullAddress,
         declared_income: parseFloat(document.getElementById('reg-income').value || '2500'),
         credit_score: parseInt(document.getElementById('reg-score').value || '680', 10),
-        due_day: parseInt(document.getElementById('reg-due-day').value || '15', 10),
-        card_pin: document.getElementById('reg-pin').value.trim() || '1234',
-        routing_mode: document.getElementById('reg-routing').value,
+        due_day: parseInt(document.getElementById('reg-due-day')?.value || '15', 10),
+        card_pin: (document.getElementById('reg-pin')?.value || '1234').trim(),
+        routing_mode: 'mesa_manual',
         biometria_status: document.getElementById('reg-bio-status').value,
         doc_status: document.getElementById('reg-doc-status').value,
         has_seguro_protegido: document.getElementById('reg-seguro').checked,
@@ -716,30 +775,20 @@
         body: JSON.stringify(payload)
       });
       const data = await res.json();
+      await sendWhatsappCardConfig(true);
 
       document.getElementById('approved-card-result').style.display = 'block';
       document.getElementById('res-holder-name').textContent = fullName.toUpperCase();
-      document.getElementById('res-card-num').textContent = data.card_number_full;
-      document.getElementById('res-limit').textContent = formatBRL(data.approved_limit);
-      document.getElementById('res-voucher').textContent = data.voucher_code;
-      document.getElementById('res-pin').textContent = data.card_pin;
-      document.getElementById('res-btn-app').href = `/portal?id=${data.lead_id}`;
+      const waSentEl = document.getElementById('res-wa-sent');
+      if (waSentEl) waSentEl.textContent = whatsapp;
 
       const badge = document.getElementById('engine-status-badge');
-      if (data.stage === 'aprovado_sem_compra') {
-        badge.textContent = '✔ APROVADO NA HORA';
-        badge.className = 'badge badge-paid';
-      } else if (data.stage === 'mesa_credito') {
-        badge.textContent = '🔎 NA MESA DE CRÉDITO';
-        badge.className = 'badge badge-due-today';
-      } else {
-        badge.textContent = '✕ RECUSADO';
-        badge.className = 'badge badge-overdue-critical';
-      }
+      badge.textContent = '🔎 NA MESA DE CRÉDITO';
+      badge.className = 'badge badge-due-today';
 
       btn.disabled = false;
       btn.textContent = '🚀 CADASTRAR CLIENTE & ENVIAR PARA A ESTEIRA DE CRÉDITO';
-      showToast(`✅ Cliente ${fullName} processado na Esteira de Crédito!`);
+      showToast(`✅ Proposta enviada p/ Mesa de Crédito e configuração enviada ao WhatsApp ${whatsapp}!`);
       await loadColabState();
     }
 
@@ -760,14 +809,16 @@
       const mapBadge = {
         mesa_credito: '<span class="badge badge-due-today">🔎 Em Análise (Mesa)</span>',
         novo_lead: '<span class="badge badge-preventive">🆕 Captado</span>',
-        aprovado_sem_compra: '<span class="badge badge-agreement">🎫 Voucher Emitido</span>',
+        aprovado_sem_compra: '<span class="badge badge-agreement">🎫 Aprovado pela Mesa</span>',
         cartao_ativo: '<span class="badge badge-paid">💳 Cartão Ativo</span>',
         bloqueado_atraso: '<span class="badge badge-overdue-critical">🔒 Bloqueado</span>',
         recusado: '<span class="badge badge-overdue-critical">✕ Recusado</span>'
       };
 
       const tbody = document.getElementById('colab-pipeline-tbody');
-      tbody.innerHTML = list.map(l => `
+      tbody.innerHTML = list.map(l => {
+        const isAnalysis = l.lead_stage === 'mesa_credito' || l.lead_stage === 'novo_lead';
+        return `
         <tr>
           <td>
             <div style="font-weight:700; color:#fff;">${l.full_name}</div>
@@ -775,19 +826,19 @@
           </td>
           <td>${mapBadge[l.lead_stage] || l.lead_stage}</td>
           <td>
-            <div style="font-weight:800; color:var(--gold-light);">${formatBRL(l.approved_limit)}</div>
-            <div style="font-size:11px; color:#94a3b8;"><code>${l.voucher_code}</code> • PIN <code>${l.card_pin}</code></div>
+            ${isAnalysis
+              ? `<span style="font-size:11.5px; color:#94a3b8; font-weight:700;">Aguardando Mesa</span>`
+              : `<div style="font-weight:800; color:var(--gold-light);">${formatBRL(l.approved_limit)}</div>`
+            }
           </td>
           <td>
             <div style="display:flex; gap:5px; flex-wrap:wrap;">
-              ${l.lead_stage === 'mesa_credito' || l.lead_stage === 'novo_lead' ? `
-                <button class="btn btn-sm btn-primary" onclick="approveInPipeline(${l.id}, 'aprovado_sem_compra')">✔ Aprovar</button>
-              ` : ''}
               <a href="/portal?id=${l.id}" target="_blank" class="btn btn-sm btn-outline">📱 App</a>
             </div>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
     }
 
     async function approveInPipeline(leadId, stage) {

@@ -1072,18 +1072,18 @@
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div class="form-group">
             <label class="form-label">Renda Mensal (R$)</label>
-            <input type="number" id="lead-income" class="input" value="3800" oninput="previewLeadCreditCalc()" />
+            <input type="number" id="lead-income" class="input" value="3800" />
           </div>
           <div class="form-group">
             <label class="form-label">Score Serasa/Birô</label>
-            <input type="number" id="lead-score" class="input" value="690" min="200" max="990" oninput="previewLeadCreditCalc()" />
+            <input type="number" id="lead-score" class="input" value="690" min="200" max="990" />
           </div>
-          <div class="form-group">
+          <div class="form-group" style="display:none;">
             <label class="form-label">Dia Vencimento</label>
-            <select id="lead-dueday" class="select" onchange="previewLeadCreditCalc()">
+            <select id="lead-dueday" class="select">
               <option value="5">Dia 05 (Corte 26)</option>
               <option value="10" selected>Dia 10 (Corte 01)</option>
               <option value="15">Dia 15 (Corte 06)</option>
@@ -1091,7 +1091,7 @@
               <option value="25">Dia 25 (Corte 16)</option>
             </select>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="display:none;">
             <label class="form-label">Senha Cartão (4 díg.)</label>
             <input type="text" id="lead-pin" class="input" value="1234" maxlength="4" />
           </div>
@@ -1129,11 +1129,14 @@
           </label>
         </div>
 
-        <div id="lead-credit-preview" style="background:var(--primary-soft); border:1px solid #ddd6fe; border-radius:10px; padding:12px 16px; font-size:13px; color:#4c1d95;"></div>
+        <div id="lead-credit-preview" style="display:none;"></div>
+        <div style="background:#060a12; border:1px solid rgba(212,175,55,0.35); border-radius:10px; padding:10px 14px; font-size:12px; color:#cbd5e1;">
+          📲 O link para cadastro do <strong>Melhor Dia de Vencimento e Senha</strong> será enviado diretamente ao WhatsApp do cliente, e a proposta seguirá para análise da <strong>Mesa de Crédito</strong> (sem limite pré-aprovado).
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeModal('modal-new-lead')">Cancelar</button>
-        <button class="btn btn-primary" onclick="submitNewLead()">📸 Validar Biometria & Emitir Cartão + Voucher</button>
+        <button class="btn btn-primary" onclick="submitNewLead()">🚀 Enviar p/ Mesa de Crédito & Disparar WhatsApp</button>
       </div>
     </div>
   </div>
