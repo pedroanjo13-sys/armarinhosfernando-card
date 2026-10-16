@@ -1524,13 +1524,20 @@ async def api_send_whatsapp_card_config(request):
 
     conn = get_db()
     cur = conn.cursor()
+    holder_id = 1
+    if cpf:
+        cur.execute("SELECT id FROM card_holders WHERE cpf = ? ORDER BY id DESC LIMIT 1", (cpf,))
+        row = cur.fetchone()
+        if row:
+            holder_id = row["id"]
     now_str = "2026-10-16 " + datetime.datetime.now().strftime("%H:%M")
     cur.execute("""
         INSERT INTO interaction_logs (
             statement_id, holder_id, channel, stage_code, recipient,
             message_body, outcome, created_at
-        ) VALUES (NULL, NULL, 'WhatsApp Oficial', 'CONFIG-CARTAO', ?, ?, ?, ?)
+        ) VALUES (NULL, ?, 'WhatsApp Oficial', 'CONFIG-CARTAO', ?, ?, ?, ?)
     """, (
+        holder_id,
         f"{full_name} ({whatsapp})",
         msg_text,
         "Link de Vencimento e Senha enviado via WhatsApp",
