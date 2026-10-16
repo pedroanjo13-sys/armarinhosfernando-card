@@ -57,8 +57,8 @@ def sync_to_github(commit_msg="Atualizacao automatica Armarinhos Fernando Card")
     ])
     run_git(["git", "commit", "--allow-empty", "-m", f"{commit_msg} [{datetime.datetime.now().strftime('%H:%M:%S')}]"])
 
-    # Push to BOTH repositories so Render AND armarinhosfernando-card stay 100% synced!
-    repos = ["bompreco-card", "armarinhosfernando-card"]
+    # Primary repository: armarinhosfernando-card | Backup repository: bompreco-card
+    repos = ["armarinhosfernando-card", "bompreco-card"]
     results = {}
     for rp in repos:
         auth_url = f"https://{username}:{token}@github.com/{username}/{rp}.git"
@@ -70,8 +70,9 @@ def sync_to_github(commit_msg="Atualizacao automatica Armarinhos Fernando Card")
     run_git(["git", "remote", "add", "origin", clean_url])
 
     return {
-        "ok": all(results.values()),
-        "synced_repos": [f"https://github.com/{username}/{r}" for r in repos]
+        "ok": results.get("armarinhosfernando-card", False),
+        "primary_repo": f"https://github.com/{username}/armarinhosfernando-card",
+        "backup_repo": f"https://github.com/{username}/bompreco-card"
     }
 
 
