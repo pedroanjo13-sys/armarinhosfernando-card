@@ -12,6 +12,10 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 role = "admin"
 port = 3000
+pos_args = [a for a in sys.argv[1:] if not a.startswith("--")]
+if len(pos_args) >= 2:
+    role = pos_args[0]
+    port = int(pos_args[1])
 for arg in sys.argv[1:]:
     if arg.startswith("--role="):
         role = arg.split("=", 1)[1]
