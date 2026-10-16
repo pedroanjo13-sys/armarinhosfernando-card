@@ -2815,7 +2815,14 @@ async def api_sync_version(request):
                 val = f.read().strip()
                 if val:
                     return val
-        return f"https://{fallback_port}-{sandbox_id}.e2b.app"
+        render_base = (os.environ.get("RENDER_EXTERNAL_URL") or "https://bompreco-card.onrender.com").rstrip("/")
+        path_map = {
+            "admin": f"{render_base}/",
+            "webpos": f"{render_base}/webpos",
+            "cliente": f"{render_base}/portal",
+            "cadastro": f"{render_base}/cadastro"
+        }
+        return path_map.get(r_name, render_base)
 
     return web.json_response({
         "ok": True,
@@ -2871,8 +2878,8 @@ def _keepalive_worker():
                 ).read()
             except Exception:
                 pass
-        # Se estiver rodando no Render.com, faz ping externo na URL pública do Render para nunca hibernar
-        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "").strip().rstrip("/")
+        # Faz ping externo na URL pública do Render (https://bompreco-card.onrender.com) para nunca hibernar
+        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "https://bompreco-card.onrender.com").strip().rstrip("/")
         if render_ext_url.startswith("https://"):
             try:
                 req_r = urllib.request.Request(
