@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 cloudflared
+data/github_sync.json
+data/url_*.txt
+data/cobraflow.db
+data/credivarejo.db
