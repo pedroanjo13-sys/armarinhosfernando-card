@@ -787,118 +787,11 @@
         </div>
       </div>
 
-      <!-- Quick Action Dock -->
-      <div class="quick-dock">
-        <button class="dock-btn" onclick="switchAppTab('pix')">
-          <div class="dock-icon">❖</div>
-          <span class="dock-label">Pagar PIX</span>
-        </button>
-        <button class="dock-btn" onclick="switchAppTab('pix')">
-          <div class="dock-icon">📅</div>
-          <span class="dock-label">Parcelar</span>
-        </button>
-        <button class="dock-btn" onclick="copyVirtualCard()">
-          <div class="dock-icon">💳</div>
-          <span class="dock-label">Cartão Virtual</span>
-        </button>
-        <button class="dock-btn" onclick="switchAppTab('card')">
-          <div class="dock-icon">⬆️</div>
-          <span class="dock-label">Mais Limite</span>
-        </button>
-        <button class="dock-btn" onclick="switchAppTab('card')">
-          <div class="dock-icon">🔒</div>
-          <span class="dock-label">Segurança</span>
-        </button>
-      </div>
-
-      <!-- TAB 1: INÍCIO, BANNERS & BENEFÍCIOS -->
+      <!-- TAB 1: INÍCIO (FATURA ATUAL + LIMITE DISPONÍVEL COMPACTO) -->
       <div id="tab-home" class="app-section active">
 
-        <!-- Promotional Banners Carousel -->
-        <div>
-          <div class="section-head">
-            <span class="section-title">✨ Ofertas & Benefícios Prime</span>
-            <div class="banner-dots">
-              <span class="banner-dot active" onclick="showBanner(0)"></span>
-              <span class="banner-dot" onclick="showBanner(1)"></span>
-              <span class="banner-dot" onclick="showBanner(2)"></span>
-            </div>
-          </div>
-
-          <!-- Banner 1: Gold VIP -->
-          <div class="promo-banner theme-gold active" id="promo-banner-0">
-            <div style="max-width:68%;">
-              <span class="promo-tag">🔥 Oferta Exclusiva Cartão</span>
-              <div class="promo-title">Semana Prime Gold: Até 15% OFF + 10x Sem Juros</div>
-              <div class="promo-desc">Válido em Eletro, Bazar e Mercearia pagando com seu Prime Card.</div>
-              <button class="promo-cta" onclick="activatePromoCoupon('PRIME15VIP', '15% OFF + 10x Sem Juros ativado no seu CPF!')">⚡ Ativar Desconto no CPF</button>
-            </div>
-            <svg width="82" height="82" viewBox="0 0 80 80" fill="none">
-              <circle cx="40" cy="40" r="36" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.5"/>
-              <rect x="18" y="26" width="44" height="28" rx="6" fill="#0B111E" stroke="#F3E5AB" stroke-width="2"/>
-              <rect x="24" y="33" width="10" height="7" rx="2" fill="#D4AF37"/>
-              <path d="M24 46H48" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-              <circle cx="56" cy="24" r="10" fill="#D4AF37"/>
-              <text x="56" y="28" text-anchor="middle" fill="#05080F" font-size="10" font-weight="900">%</text>
-            </svg>
-          </div>
-
-          <!-- Banner 2: Sapphire Blue Cashback -->
-          <div class="promo-banner theme-blue" id="promo-banner-1">
-            <div style="max-width:68%;">
-              <span class="promo-tag" style="border-color:#60a5fa; color:#93c5fd; background:rgba(37,99,235,0.25);">💎 Clube Prime Cashback</span>
-              <div class="promo-title">Ganhe 3% de Cashback na Fatura em Toda Compra</div>
-              <div class="promo-desc">Use seu cartão na loja e acumule pontos que viram desconto direto.</div>
-              <button class="promo-cta" onclick="activatePromoCoupon('CASHBACK3', 'Cashback Prime 3% ativo para suas próximas compras!')">💎 Ativar Cashback 3%</button>
-            </div>
-            <svg width="82" height="82" viewBox="0 0 80 80" fill="none">
-              <circle cx="40" cy="40" r="36" fill="rgba(59,130,246,0.18)" stroke="#60A5FA" stroke-width="1.5"/>
-              <path d="M40 18L56 32L40 62L24 32L40 18Z" fill="rgba(212,175,55,0.25)" stroke="#F3E5AB" stroke-width="2"/>
-              <circle cx="40" cy="36" r="8" fill="#D4AF37"/>
-            </svg>
-          </div>
-
-          <!-- Banner 3: Midnight Parcelamento -->
-          <div class="promo-banner theme-midnight" id="promo-banner-2">
-            <div style="max-width:68%;">
-              <span class="promo-tag">💳 Fôlego Financeiro</span>
-              <div class="promo-title">Parcele sua Fatura em até 12x Fixas na Hora</div>
-              <div class="promo-desc">Libere seu limite imediatamente no caixa pagando a 1ª parcela via PIX.</div>
-              <button class="promo-cta" onclick="switchAppTab('pix')">🧮 Simular Parcelamento</button>
-            </div>
-            <svg width="82" height="82" viewBox="0 0 80 80" fill="none">
-              <circle cx="40" cy="40" r="36" fill="rgba(212,175,55,0.14)" stroke="#D4AF37" stroke-width="1.5"/>
-              <path d="M26 52L36 40L44 46L56 28" stroke="#F3E5AB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="56" cy="28" r="4" fill="#60A5FA"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Limit & Best Purchase Day Card -->
-        <div class="surface-card">
-          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
-            <div>
-              <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Limite Disponível para Compras</div>
-              <div style="font-size:26px; font-weight:900; color:var(--gold-light);" id="ui-avail-limit">R$ 0,00</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:11px; color:#94a3b8;">Limite Total</div>
-              <div style="font-size:14px; font-weight:800; color:#fff;" id="ui-total-limit">R$ 0,00</div>
-            </div>
-          </div>
-
-          <div style="height:8px; background:#162238; border-radius:99px; overflow:hidden; margin-bottom:10px;">
-            <div id="ui-limit-bar" style="height:100%; width:25%; background:linear-gradient(90deg, #2563eb 0%, #d4af37 100%); border-radius:99px;"></div>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#cbd5e1;">
-            <span>Utilizado: <strong id="ui-used-limit" style="color:#fff;">R$ 0,00</strong></span>
-            <span>🛒 Melhor Dia: <strong id="ui-best-day" style="color:var(--gold-light);">Dia 05</strong> (Venc. <span id="ui-due-day">15</span>)</span>
-          </div>
-        </div>
-
-        <!-- Invoice Summary Highlight -->
-        <div class="surface-card" style="border-color:rgba(59, 130, 246, 0.35);">
+        <!-- 1. Fatura Atual (Logo abaixo do cartão) -->
+        <div class="surface-card" style="border-color:rgba(59, 130, 246, 0.35); margin-top:4px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:#93c5fd;">📄 Fatura Atual</span>
             <span id="ui-st-badge" style="font-size:11px; font-weight:800; padding:3px 9px; border-radius:99px; background:rgba(212,175,55,0.18); color:var(--gold-light);">Aberta</span>
@@ -913,24 +806,58 @@
           </div>
         </div>
 
-        <!-- Secondary Benefit Banners (2-Column Grid) -->
-        <div class="mini-perks-grid">
-          <div class="perk-card" onclick="copyVoucherCode()">
-            <div style="font-size:18px; margin-bottom:4px;">🎫</div>
-            <div style="font-size:12.5px; font-weight:800; color:var(--gold-light);">Voucher 10% OFF</div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Toque para copiar seu código de compra no caixa</div>
+        <!-- 2. Limite Disponível (Abaixo da Fatura Atual, menor e mais compacto) -->
+        <div class="surface-card" style="padding:12px 14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div>
+              <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Limite Disponível</div>
+              <div style="font-size:18px; font-weight:900; color:var(--gold-light); line-height:1.2;" id="ui-avail-limit">R$ 0,00</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:#94a3b8;">Limite Total</div>
+              <div style="font-size:12.5px; font-weight:800; color:#fff;" id="ui-total-limit">R$ 0,00</div>
+            </div>
           </div>
-          <div class="perk-card" onclick="switchAppTab('card')">
-            <div style="font-size:18px; margin-bottom:4px;">🛡️</div>
-            <div style="font-size:12.5px; font-weight:800; color:#93c5fd;">Proteção Prime</div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Seguro Conta Protegida e alertas em tempo real</div>
+
+          <div style="height:5px; background:#162238; border-radius:99px; overflow:hidden; margin-bottom:6px;">
+            <div id="ui-limit-bar" style="height:100%; width:25%; background:linear-gradient(90deg, #2563eb 0%, #d4af37 100%); border-radius:99px;"></div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:10.5px; color:#cbd5e1;">
+            <span>Utilizado: <strong id="ui-used-limit" style="color:#fff;">R$ 0,00</strong></span>
+            <span>🛒 Melhor Dia: <strong id="ui-best-day" style="color:var(--gold-light);">Dia 05</strong> (Venc. <span id="ui-due-day">15</span>)</span>
           </div>
         </div>
 
       </div>
 
-      <!-- TAB 2: FATURA, EXTRATO & SIMULADOR DE COMPRAS -->
+      <!-- TAB 2: FATURA, EXTRATO & ATALHOS RÁPIDOS -->
       <div id="tab-invoice" class="app-section">
+
+        <!-- Quadradinhos de Atalhos Rápidos (Pagar PIX, Parcelar, Cartão Virtual, Mais Limite, Segurança) na Aba de Fatura -->
+        <div class="quick-dock" style="padding:0 0 12px 0 !important; margin-bottom:4px;">
+          <button class="dock-btn" onclick="switchAppTab('pix')">
+            <div class="dock-icon">❖</div>
+            <span class="dock-label">Pagar PIX</span>
+          </button>
+          <button class="dock-btn" onclick="switchAppTab('pix')">
+            <div class="dock-icon">📅</div>
+            <span class="dock-label">Parcelar</span>
+          </button>
+          <button class="dock-btn" onclick="copyVirtualCard()">
+            <div class="dock-icon">💳</div>
+            <span class="dock-label">Cartão Virtual</span>
+          </button>
+          <button class="dock-btn" onclick="switchAppTab('card')">
+            <div class="dock-icon">⬆️</div>
+            <span class="dock-label">Mais Limite</span>
+          </button>
+          <button class="dock-btn" onclick="switchAppTab('card')">
+            <div class="dock-icon">🔒</div>
+            <span class="dock-label">Segurança</span>
+          </button>
+        </div>
+
         <div class="surface-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div>
