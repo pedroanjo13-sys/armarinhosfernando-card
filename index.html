@@ -18,21 +18,30 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">CPF de Acesso</label>
-        <input type="text" id="adm-login-user" class="input" placeholder="000.000.000-00" value="384.912.048-22" maxlength="14" style="font-size:15px; font-weight:800; letter-spacing:1px; padding:12px 14px;" />
+        <label class="form-label">CPF do Colaborador / Administrador</label>
+        <input type="text" id="adm-login-user" class="input" placeholder="000.000.000-00" value="388.776.368-82" maxlength="14" oninput="maskAdminCpfInput(this)" style="font-size:15px; font-weight:800; letter-spacing:1px; padding:12px 14px;" />
       </div>
 
-      <div class="form-group" style="margin-bottom:20px;">
+      <div class="form-group" style="margin-bottom:16px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-          <label class="form-label" style="margin-bottom:0;">Senha</label>
+          <label class="form-label" style="margin-bottom:0;">Senha Pessoal</label>
           <span style="font-size:11px; color:#60a5fa; cursor:pointer; font-weight:700;" onclick="const p=document.getElementById('adm-login-pass'); p.type=p.type==='password'?'text':'password';">👁️ Mostrar/Ocultar</span>
         </div>
-        <input type="password" id="adm-login-pass" class="input" placeholder="Digite sua senha" value="123456" onkeydown="if(event.key==='Enter') submitAdminLogin()" style="font-size:15px; font-weight:800; letter-spacing:2px; padding:12px 14px;" />
+        <input type="password" id="adm-login-pass" class="input" placeholder="Digite sua senha" value="2030" onkeydown="if(event.key==='Enter') submitAdminLogin()" style="font-size:15px; font-weight:800; letter-spacing:2px; padding:12px 14px;" />
       </div>
 
+      <div id="adm-login-error" style="display:none; background:rgba(239,68,68,0.14); border:1px solid rgba(239,68,68,0.45); color:#fca5a5; padding:10px 12px; border-radius:10px; font-size:12px; font-weight:700; margin-bottom:14px;"></div>
+
       <button type="button" class="btn btn-primary" style="width:100%; padding:14px; font-size:14px; font-weight:900; margin-bottom:12px;" onclick="submitAdminLogin()">
-        ENTRAR NO DASHBOARD
+        ENTRAR NO PAINEL (ACESSO POR NICHO)
       </button>
+
+      <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:11px; color:#cbd5e1; line-height:1.5;">
+        <div style="color:#f3e5ab; font-weight:800; margin-bottom:4px;">🔐 Controle de Acesso por Nicho (RBAC):</div>
+        • <strong>🛡️ Adm Geral:</strong> Vê tudo + cadastra equipe<br/>
+        • <strong>💳 Crédito:</strong> Restrito somente à Mesa de Crédito & Limites<br/>
+        • <strong>📞 Cobrança:</strong> Restrito somente a Faturas, Régua & Acordos
+      </div>
 
       <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#94a3b8; padding-top:12px; border-top:1px solid rgba(212,175,55,0.16);">
         <span>🔒 Acesso Seguro Criptografado</span>
@@ -42,7 +51,7 @@
   </div>
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="app-sidebar" style="display:none;">
     <div class="brand-box">
       <div class="brand-logo" id="sidebar-brand-logo" style="background:linear-gradient(135deg, #f3e5ab 0%, #d4af37 55%, #9a7b1c 100%); color:#05080f;">BP</div>
       <div>
@@ -51,21 +60,27 @@
       </div>
     </div>
 
-    <div class="nav-section-label">Frente de Loja & PDV</div>
+    <div id="sidebar-user-role-box" style="margin:0 12px 12px; padding:10px 12px; border-radius:10px; background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.35);">
+      <div id="sidebar-role-badge" style="font-size:10px; font-weight:900; color:#f3e5ab; text-transform:uppercase; letter-spacing:0.8px;">🛡️ ADM GERAL</div>
+      <div id="sidebar-user-name" style="font-size:12.5px; font-weight:800; color:#fff; margin-top:2px;">Pedro Henrique Anjo</div>
+      <div id="sidebar-user-cpf" style="font-size:11px; color:#94a3b8; font-family:monospace;">CPF: 388.776.368-82</div>
+    </div>
+
+    <div class="nav-section-label" id="nav-sec-loja">Frente de Loja & Crédito</div>
     <ul class="nav-list">
-      <li>
+      <li id="nav-item-dashboard">
         <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
-          <span class="nav-btn-left">📊 Painel Lojista & Hoje</span>
+          <span class="nav-btn-left">📊 Painel Geral & Hoje</span>
           <span class="nav-badge danger" id="nav-overdue-count">3</span>
         </button>
       </li>
-      <li>
+      <li id="nav-item-leads">
         <button class="nav-btn" data-tab="leads" onclick="switchTab('leads')">
-          <span class="nav-btn-left">🪪 Esteira Biometria & Vouchers</span>
+          <span class="nav-btn-left">💳 Mesa de Crédito & Esteira</span>
           <span class="nav-badge emerald" id="nav-leads-count">8</span>
         </button>
       </li>
-      <li>
+      <li id="nav-item-pos">
         <button class="nav-btn" data-tab="pos" onclick="switchTab('pos')">
           <span class="nav-btn-left">🖥️ WebPOS Prime & Promotores</span>
           <span class="nav-badge" style="background:#d4af37;" id="nav-pos-count">5</span>
@@ -73,36 +88,42 @@
       </li>
     </ul>
 
-    <div class="nav-section-label">Financeiro & Cobrança</div>
+    <div class="nav-section-label" id="nav-sec-cobranca">Nicho de Cobrança</div>
     <ul class="nav-list">
-      <li>
+      <li id="nav-item-statements">
         <button class="nav-btn" data-tab="statements" onclick="switchTab('statements')">
-          <span class="nav-btn-left">🧾 Faturas, Corte & Rotativo</span>
+          <span class="nav-btn-left">🧾 Faturas, Corte & Cobrança</span>
           <span class="nav-badge" id="nav-statements-count">7</span>
         </button>
       </li>
-      <li>
+      <li id="nav-item-rules">
         <button class="nav-btn" data-tab="rules" onclick="switchTab('rules')">
-          <span class="nav-btn-left">⚡ Régua (Melhor Dia + Cobrança)</span>
+          <span class="nav-btn-left">⚡ Régua de Cobrança</span>
           <span class="nav-badge" id="nav-rules-count">8</span>
         </button>
       </li>
-      <li>
+      <li id="nav-item-simulator">
         <button class="nav-btn" data-tab="simulator" onclick="switchTab('simulator')">
-          <span class="nav-btn-left">🤝 Parcelar Fatura & Super App</span>
+          <span class="nav-btn-left">🤝 Acordos & Renegociação</span>
         </button>
       </li>
     </ul>
 
-    <div class="nav-section-label">Parametrização & Perfis</div>
+    <div class="nav-section-label" id="nav-sec-admin">Administração Geral Master</div>
     <ul class="nav-list">
-      <li>
-        <button class="nav-btn" data-tab="environments" onclick="switchTab('environments')">
-          <span class="nav-btn-left">👁️ App Cliente vs. WebPOS</span>
-          <span class="nav-badge emerald">3 Perfis</span>
+      <li id="nav-item-team">
+        <button class="nav-btn" data-tab="team" onclick="switchTab('team')">
+          <span class="nav-btn-left">👥 Equipe & Acessos (Nichos)</span>
+          <span class="nav-badge" style="background:#3b82f6; color:#fff;" id="nav-team-count">4</span>
         </button>
       </li>
-      <li>
+      <li id="nav-item-environments">
+        <button class="nav-btn" data-tab="environments" onclick="switchTab('environments')">
+          <span class="nav-btn-left">👁️ App Cliente vs. WebPOS</span>
+          <span class="nav-badge emerald">4 Sites</span>
+        </button>
+      </li>
+      <li id="nav-item-settings">
         <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')">
           <span class="nav-btn-left">⚙️ Tarifas, Seguros & Setup Loja</span>
         </button>
@@ -126,12 +147,15 @@
         <p id="page-subtitle">O Administrador enxerga e controla tudo: Esteira, Faturas, WebPOS da Loja e Super App do Cliente</p>
       </div>
       <div class="topbar-actions">
-        <button class="btn btn-outline" style="border-color:#2563eb; color:#6d28d9; font-weight:800;" onclick="switchTab('environments')">
-          👁️ Central dos 4 Sites (Perfis)
+        <span id="topbar-role-pill" class="badge badge-paid" style="padding:7px 12px; font-size:11.5px; font-weight:800;">🛡️ ADM GERAL</span>
+        <button id="top-btn-team" class="btn btn-outline" style="border-color:#d4af37; color:#f3e5ab; font-weight:800;" onclick="switchTab('team')">
+          👥 Equipe & Acessos
         </button>
-        <a href="/cadastro?admin_view=1" class="btn btn-primary" style="font-weight:800;">🪪 Portal Colaborador (Cadastro)</a>
-        <a href="/webpos?admin_view=1" class="btn btn-outline" style="border-color:#f8fafc; background:#0f172a; color:#fff; font-weight:800;">🖥️ Terminal WebPOS (Caixa)</a>
-        <a href="/portal?id=1&admin_view=1" class="btn btn-outline" style="border-color:#d4af37; color:#c2410c;">📱 App do Cliente</a>
+        <button id="top-btn-env" class="btn btn-outline" style="border-color:#2563eb; color:#93c5fd; font-weight:800;" onclick="switchTab('environments')">
+          👁️ Central dos 4 Sites
+        </button>
+        <a id="top-link-cadastro" href="/cadastro?admin_view=1" class="btn btn-primary" style="font-weight:800;">🪪 Portal Colaborador</a>
+        <a id="top-link-webpos" href="/webpos?admin_view=1" class="btn btn-outline" style="border-color:#f8fafc; background:#0f172a; color:#fff; font-weight:800;">🖥️ Terminal WebPOS</a>
         <button class="btn btn-outline" onclick="logoutAdminConsole()" title="Voltar para a tela de Login">🔒 Sair</button>
       </div>
     </header>
@@ -685,6 +709,99 @@
                 <strong style="color:var(--text-main);">4. Integração no Frente de Caixa (TEF / PDV):</strong><br/>
                 Os operadores de caixa usam a tela <strong>"🛒 Autorizador PDV"</strong> deste sistema (ou integração via API TEF SiTef / TOTVS) digitando o CPF/Cartão + Senha de 4 dígitos do cliente.
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7.5: EQUIPE & ACESSOS RESTRITOS POR NICHO (EXCLUSIVO ADM GERAL) -->
+      <section id="tab-team" class="tab-section" style="display:none;">
+        <div class="kpi-grid" id="team-kpis-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:18px;">
+          <div class="kpi-card" style="border-left:4px solid #d4af37;">
+            <div class="kpi-label">🛡️ NICHO 1: ADM GERAL MASTER</div>
+            <div class="kpi-value" id="kpi-team-adm">2</div>
+            <div class="kpi-sub"><span>Acesso total a todas as abas, taxas da loja e cadastro de novos operadores.</span></div>
+          </div>
+          <div class="kpi-card" style="border-left:4px solid #2563eb;">
+            <div class="kpi-label">💳 NICHO 2: MESA DE CRÉDITO</div>
+            <div class="kpi-value" id="kpi-team-credito">1</div>
+            <div class="kpi-sub"><span>Acesso estritamente restrito à Esteira de Crédito, Score, Biometria e Limites.</span></div>
+          </div>
+          <div class="kpi-card" style="border-left:4px solid #10b981;">
+            <div class="kpi-label">📞 NICHO 3: SETOR DE COBRANÇA</div>
+            <div class="kpi-value" id="kpi-team-cobranca">1</div>
+            <div class="kpi-sub"><span>Acesso estritamente restrito a Faturas em Atraso, Régua de Cobrança e Acordos.</span></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: 380px 1fr;">
+          <!-- Formulário de Novo Cadastro de Acesso Restrito -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">➕ Cadastrar Novo Acesso Restrito</div>
+                <div class="card-subtitle">Defina o CPF, senha e qual nicho este colaborador poderá acessar</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Nome Completo do Colaborador *</label>
+                <input type="text" id="new-staff-name" class="input" placeholder="Ex: Juliana Mendes" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">CPF de Login (11 dígitos) *</label>
+                <input type="text" id="new-staff-cpf" class="input" placeholder="000.000.000-00" maxlength="14" oninput="maskAdminCpfInput(this)" style="font-family:monospace; font-weight:800;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Senha de Acesso ao Painel *</label>
+                <input type="text" id="new-staff-pass" class="input" placeholder="Ex: 1234" value="1234" style="font-family:monospace; font-weight:800;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nicho de Acesso (Permissão Restrita) *</label>
+                <select id="new-staff-role" class="select" style="border-color:#d4af37; color:#f3e5ab; font-weight:800;">
+                  <option value="cobranca">📞 Setor de Cobrança (Restrito: Faturas, Régua e Acordos)</option>
+                  <option value="credito">💳 Mesa de Crédito (Restrito: Esteira, Score e Limites)</option>
+                  <option value="adm_geral">🛡️ Adm Geral Master (Acesso Completo + Gestão de Equipe)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Filial / Unidade</label>
+                <select id="new-staff-branch" class="select">
+                  <option value="Matriz Centro">📍 Matriz Centro</option>
+                  <option value="Filial Shopping Sul">📍 Filial Shopping Sul</option>
+                  <option value="Filial Norte">📍 Filial Norte</option>
+                  <option value="Central Backoffice">🏢 Central Backoffice</option>
+                </select>
+              </div>
+              <button type="button" class="btn btn-primary" style="width:100%; padding:12px; font-weight:900;" onclick="createNewStaffMember()">
+                🔐 CADASTRAR COLABORADOR COM ACESSO RESTRITO
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabela de Colaboradores e Permissões -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">👥 Quadro de Acessos Administrativos Cadastrados</div>
+                <div class="card-subtitle">Altere o nicho de permissão, troque a senha ou bloqueie acessos em tempo real</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Colaborador / Filial</th>
+                    <th>CPF de Login</th>
+                    <th>Senha</th>
+                    <th>Nicho de Acesso (Permissão)</th>
+                    <th>O que pode ver</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-table-body"></tbody>
+              </table>
             </div>
           </div>
         </div>

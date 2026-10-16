@@ -1,6 +1,71 @@
 let APP_STATE = null;
 let CURRENT_TAB = 'dashboard';
 let STATEMENT_FILTER = 'all';
+let CURRENT_ADMIN_USER = null;
+
+function maskAdminCpfInput(el) {
+  let v = (el.value || '').replace(/\D/g, '').slice(0, 11);
+  if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+  else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+  else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+  el.value = v;
+}
+
+function getAllowedTabsForRole(role) {
+  if (role === 'credito') return ['leads'];
+  if (role === 'cobranca') return ['statements', 'rules', 'simulator'];
+  return ['dashboard', 'leads', 'pos', 'statements', 'rules', 'simulator', 'team', 'environments', 'settings'];
+}
+
+function applyAdminRolePermissions(adminUser) {
+  CURRENT_ADMIN_USER = adminUser;
+  const role = adminUser?.role || 'adm_geral';
+  const allowed = getAllowedTabsForRole(role);
+
+  const badgeMap = {
+    adm_geral: '🛡️ ADM GERAL (ACESSO TOTAL)',
+    credito: '💳 NICHO RESTRITO: CRÉDITO',
+    cobranca: '📞 NICHO RESTRITO: COBRANÇA'
+  };
+  const sbBadge = document.getElementById('sidebar-role-badge');
+  const sbName = document.getElementById('sidebar-user-name');
+  const sbCpf = document.getElementById('sidebar-user-cpf');
+  const topPill = document.getElementById('topbar-role-pill');
+
+  if (sbBadge) sbBadge.textContent = badgeMap[role] || role;
+  if (sbName) sbName.textContent = adminUser?.full_name || 'Administrador';
+  if (sbCpf) sbCpf.textContent = `CPF: ${adminUser?.cpf || ''} • ${adminUser?.branch || 'Matriz'}`;
+  if (topPill) topPill.textContent = badgeMap[role] || role;
+
+  const allTabs = ['dashboard', 'leads', 'pos', 'statements', 'rules', 'simulator', 'team', 'environments', 'settings'];
+  allTabs.forEach(t => {
+    const li = document.getElementById(`nav-item-${t}`);
+    if (li) li.style.display = allowed.includes(t) ? 'block' : 'none';
+  });
+
+  const secLoja = document.getElementById('nav-sec-loja');
+  const secCob = document.getElementById('nav-sec-cobranca');
+  const secAdm = document.getElementById('nav-sec-admin');
+  if (secLoja) secLoja.style.display = (role === 'adm_geral' || role === 'credito') ? 'block' : 'none';
+  if (secCob) secCob.style.display = (role === 'adm_geral' || role === 'cobranca') ? 'block' : 'none';
+  if (secAdm) secAdm.style.display = (role === 'adm_geral') ? 'block' : 'none';
+
+  const topTeam = document.getElementById('top-btn-team');
+  const topEnv = document.getElementById('top-btn-env');
+  const topCad = document.getElementById('top-link-cadastro');
+  const topPos = document.getElementById('top-link-webpos');
+
+  if (topTeam) topTeam.style.display = role === 'adm_geral' ? 'inline-flex' : 'none';
+  if (topEnv) topEnv.style.display = role === 'adm_geral' ? 'inline-flex' : 'none';
+  if (topCad) topCad.style.display = (role === 'adm_geral' || role === 'credito') ? 'inline-flex' : 'none';
+  if (topPos) topPos.style.display = role === 'adm_geral' ? 'inline-flex' : 'none';
+
+  if (!allowed.includes(CURRENT_TAB)) {
+    switchTab(allowed[0]);
+  } else {
+    switchTab(CURRENT_TAB);
+  }
+}
 
 function formatBRL(val) {
   const num = Number(val || 0);
@@ -97,6 +162,8 @@ function renderAll() {
   document.getElementById('nav-pos-count').textContent = (APP_STATE.pos_transactions || []).length;
   document.getElementById('nav-statements-count').textContent = APP_STATE.statements.length;
   document.getElementById('nav-rules-count').textContent = APP_STATE.rules.length;
+  const teamCountEl = document.getElementById('nav-team-count');
+  if (teamCountEl) teamCountEl.textContent = (APP_STATE.admin_users || []).length;
 
   renderDashboard();
   renderLeadsFunnelAndTable();
@@ -106,9 +173,17 @@ function renderAll() {
   populateSimulatorSelect();
   renderAgreementsTable();
   populateSettingsForm();
+  renderStaffTable();
 }
 
 function switchTab(tabName) {
+  if (CURRENT_ADMIN_USER) {
+    const allowed = getAllowedTabsForRole(CURRENT_ADMIN_USER.role);
+    if (!allowed.includes(tabName)) {
+      showToast('🔒 Acesso Restrito: Seu perfil não possui permissão para acessar este módulo.');
+      return;
+    }
+  }
   CURRENT_TAB = tabName;
   document.querySelectorAll('.tab-section').forEach(sec => {
     sec.style.display = 'none';
@@ -148,6 +223,10 @@ function switchTab(tabName) {
     environments: [
       'Visão Separada de Ambientes: 📱 Super App do Cliente vs. 🖥️ WebPOS da Loja',
       'O Cliente NUNCA enxerga o WebPOS (Bloqueio 403), o Caixa opera apenas o WebPOS, e você (Adm do Cartão) audita tudo!'
+    ],
+    team: [
+      'Gestão de Equipe & Acessos Restritos por Nicho (Cobrança, Crédito e Adm Geral)',
+      'Cadastre colaboradores e defina estritamente quem acessa Cobrança, Mesa de Crédito ou Administração Geral'
     ],
     settings: [
       'Tarifas do Cartão (Anuidade, Seguro, Rotativo) & Checklist de Implantação na Loja',
@@ -1419,40 +1498,178 @@ async function pollLiveSync() {
   }
 }
 
-function onChangeAdminRoleSelect(roleVal) {
-  const inp = document.getElementById('adm-login-user');
-  if (!inp) return;
-  if (roleVal.includes('Mesa')) inp.value = 'mesa.credito@bomprecoprime.com.br';
-  else if (roleVal.includes('Financeiro')) inp.value = 'financeiro@bomprecoprime.com.br';
-  else inp.value = 'diretoria@bomprecoprime.com.br';
+function renderStaffTable() {
+  const users = APP_STATE?.admin_users || [];
+  const admCount = users.filter(u => u.role === 'adm_geral').length;
+  const credCount = users.filter(u => u.role === 'credito').length;
+  const cobCount = users.filter(u => u.role === 'cobranca').length;
+
+  const elAdm = document.getElementById('kpi-team-adm');
+  const elCred = document.getElementById('kpi-team-credito');
+  const elCob = document.getElementById('kpi-team-cobranca');
+  if (elAdm) elAdm.textContent = `${admCount} ${admCount === 1 ? 'operador' : 'operadores'}`;
+  if (elCred) elCred.textContent = `${credCount} ${credCount === 1 ? 'analista' : 'analistas'}`;
+  if (elCob) elCob.textContent = `${cobCount} ${cobCount === 1 ? 'operador' : 'operadores'}`;
+
+  const tbody = document.getElementById('staff-table-body');
+  if (!tbody) return;
+
+  const permDesc = {
+    adm_geral: '🛡️ Vê Tudo + Equipe & Configs',
+    credito: '💳 Só Mesa de Crédito & Limites',
+    cobranca: '📞 Só Faturas, Régua & Acordos'
+  };
+
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div style="font-weight:800; color:#fff;">${u.full_name}</div>
+        <div style="font-size:11px; color:#94a3b8;">📍 ${u.branch || 'Matriz Centro'} • ${u.department || ''}</div>
+      </td>
+      <td style="font-family:monospace; font-weight:800; color:#f3e5ab;">${u.cpf}</td>
+      <td>
+        <span style="font-family:monospace; background:#090d16; padding:3px 8px; border-radius:6px; border:1px solid rgba(212,175,55,0.3); color:#93c5fd; font-weight:800;">${u.password}</span>
+      </td>
+      <td>
+        <select class="select" style="padding:5px 8px; font-size:12px; font-weight:700;" onchange="updateStaffRole(${u.id}, this.value)">
+          <option value="cobranca" ${u.role === 'cobranca' ? 'selected' : ''}>📞 Cobrança</option>
+          <option value="credito" ${u.role === 'credito' ? 'selected' : ''}>💳 Crédito</option>
+          <option value="adm_geral" ${u.role === 'adm_geral' ? 'selected' : ''}>🛡️ Adm Geral</option>
+        </select>
+      </td>
+      <td style="font-size:11.5px; color:#cbd5e1; font-weight:700;">${permDesc[u.role] || u.role}</td>
+      <td>
+        ${u.status === 'ativo'
+          ? '<span class="badge badge-paid">● Ativo</span>'
+          : '<span class="badge badge-overdue-critical">🔒 Bloqueado</span>'}
+      </td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-sm btn-outline" onclick="promptUpdateStaffPassword(${u.id}, '${u.full_name.replace(/'/g, "\\'")}', '${u.password}')">🔑 Senha</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleStaffStatus(${u.id}, '${u.status}')">
+            ${u.status === 'ativo' ? '🔒 Bloquear' : '🔓 Ativar'}
+          </button>
+          <button class="btn btn-sm btn-outline" style="color:#f87171; border-color:rgba(248,113,113,0.4);" onclick="deleteStaffMember(${u.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function createNewStaffMember() {
+  const full_name = document.getElementById('new-staff-name')?.value.trim() || '';
+  const cpf = document.getElementById('new-staff-cpf')?.value.trim() || '';
+  const password = document.getElementById('new-staff-pass')?.value.trim() || '';
+  const role = document.getElementById('new-staff-role')?.value || 'cobranca';
+  const branch = document.getElementById('new-staff-branch')?.value || 'Matriz Centro';
+
+  if (!full_name || !cpf || !password) {
+    showToast('⚠️ Preencha Nome Completo, CPF e Senha do colaborador.');
+    return;
+  }
+
+  const res = await fetch('/api/admin-users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ full_name, cpf, password, role, branch })
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    showToast(`❌ ${data.error || 'Erro ao cadastrar colaborador'}`);
+    return;
+  }
+  document.getElementById('new-staff-name').value = '';
+  document.getElementById('new-staff-cpf').value = '';
+  showToast(`✅ Colaborador ${full_name} cadastrado no nicho ${role.toUpperCase()}!`);
+  await loadState();
+}
+
+async function updateStaffRole(id, role) {
+  await fetch('/api/admin-users/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, role })
+  });
+  showToast(`🔐 Permissão atualizada para o nicho: ${role.toUpperCase()}`);
+  await loadState();
+}
+
+async function promptUpdateStaffPassword(id, name, currentPass) {
+  const newPass = window.prompt(`Nova senha de acesso para ${name}:`, currentPass || '1234');
+  if (!newPass || !newPass.trim()) return;
+  await fetch('/api/admin-users/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, password: newPass.trim() })
+  });
+  showToast(`🔑 Senha de ${name} atualizada com sucesso!`);
+  await loadState();
+}
+
+async function toggleStaffStatus(id, currentStatus) {
+  const nextStatus = currentStatus === 'ativo' ? 'bloqueado' : 'ativo';
+  await fetch('/api/admin-users/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status: nextStatus })
+  });
+  showToast(nextStatus === 'ativo' ? '🔓 Acesso liberado!' : '🔒 Acesso bloqueado!');
+  await loadState();
+}
+
+async function deleteStaffMember(id) {
+  await fetch('/api/admin-users/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  showToast('🗑️ Cadastro removido da equipe.');
+  await loadState();
 }
 
 async function submitAdminLogin() {
   const user = document.getElementById('adm-login-user')?.value.trim() || '';
   const pass = document.getElementById('adm-login-pass')?.value.trim() || '';
+  const errBox = document.getElementById('adm-login-error');
+  if (errBox) errBox.style.display = 'none';
+
   if (!user) {
-    showToast('⚠️ Digite seu CPF para entrar no Dashboard.');
+    showToast('⚠️ Digite seu CPF para entrar no painel.');
     return;
   }
   if (!pass) {
-    showToast('⚠️ Digite sua senha para entrar no Dashboard.');
+    showToast('⚠️ Digite sua senha para entrar no painel.');
     return;
   }
-  await fetch('/api/auth/login', {
+  const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode: 'admin', cpf: user, password: pass })
   });
+  const data = await res.json();
+  if (!res.ok || !data.ok) {
+    if (errBox) {
+      errBox.textContent = `❌ ${data.error || 'CPF ou senha inválidos'}`;
+      errBox.style.display = 'block';
+    }
+    showToast(`❌ ${data.error || 'CPF ou senha inválidos'}`);
+    return;
+  }
+
+  sessionStorage.setItem('bp_admin_user', JSON.stringify(data.admin_user));
   const overlay = document.getElementById('admin-login-overlay');
   const sb = document.getElementById('app-sidebar');
   const ma = document.getElementById('app-main-area');
   if (overlay) overlay.style.display = 'none';
   if (sb) sb.style.display = 'flex';
   if (ma) ma.style.display = 'flex';
-  showToast(`🔓 Acesso liberado — CPF ${user}`);
+  applyAdminRolePermissions(data.admin_user);
+  showToast(`🔓 ${data.message}`);
 }
 
 function logoutAdminConsole() {
+  CURRENT_ADMIN_USER = null;
+  sessionStorage.removeItem('bp_admin_user');
   const overlay = document.getElementById('admin-login-overlay');
   const sb = document.getElementById('app-sidebar');
   const ma = document.getElementById('app-main-area');
@@ -1480,6 +1697,21 @@ async function naturalKeepAliveAdmin10Min() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  const savedAdmin = sessionStorage.getItem('bp_admin_user');
+  if (savedAdmin) {
+    try {
+      const parsed = JSON.parse(savedAdmin);
+      if (parsed && parsed.role) {
+        const overlay = document.getElementById('admin-login-overlay');
+        const sb = document.getElementById('app-sidebar');
+        const ma = document.getElementById('app-main-area');
+        if (overlay) overlay.style.display = 'none';
+        if (sb) sb.style.display = 'flex';
+        if (ma) ma.style.display = 'flex';
+        applyAdminRolePermissions(parsed);
+      }
+    } catch (e) {}
+  }
   loadState();
   pollLiveSync();
   setInterval(pollLiveSync, 2200);

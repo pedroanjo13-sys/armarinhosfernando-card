@@ -2683,6 +2683,87 @@ async def api_auth_login(request):
     })
 
 
+async def api_create_admin_user(request):
+    data = await request.json()
+    full_name = (data.get("full_name") or "").strip()
+    cpf = (data.get("cpf") or "").strip()
+    password = (data.get("password") or "").strip()
+    role = (data.get("role") or "cobranca").strip()
+    department = (data.get("department") or "").strip()
+    branch = (data.get("branch") or "Matriz Centro").strip()
+
+    if not full_name or not cpf or not password:
+        return web.json_response({"ok": False, "error": "Preencha Nome, CPF e Senha."}, status=400)
+
+    clean_cpf = "".join(ch for ch in cpf if ch.isdigit())
+    if len(clean_cpf) < 11:
+        return web.json_response({"ok": False, "error": "Digite os 11 dígitos do CPF."}, status=400)
+    cpf_fmt = f"{clean_cpf[:3]}.{clean_cpf[3:6]}.{clean_cpf[6:9]}-{clean_cpf[9:11]}"
+
+    if role not in ("adm_geral", "credito", "cobranca"):
+        role = "cobranca"
+
+    if not department:
+        dept_map = {
+            "adm_geral": "Administração Geral Master",
+            "credito": "Mesa de Crédito & Limites",
+            "cobranca": "Central de Cobrança & Acordos"
+        }
+        department = dept_map.get(role, "Operações")
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM admin_users WHERE replace(replace(cpf, '.', ''), '-', '') = ?",
+        (clean_cpf,)
+    )
+    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    cur.execute("""
+        INSERT INTO admin_users (full_name, cpf, password, role, department, branch, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'ativo', ?)
+    """, (full_name, cpf_fmt, password, role, department, branch, now_str))
+    new_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return web.json_response({"ok": True, "id": new_id})
+
+
+async def api_update_admin_user(request):
+    data = await request.json()
+    uid = data.get("id")
+    if not uid:
+        return web.json_response({"ok": False, "error": "ID obrigatório"}, status=400)
+
+    conn = get_db()
+    cur = conn.cursor()
+    if "role" in data:
+        role = data["role"]
+        dept_map = {
+            "adm_geral": "Administração Geral Master",
+            "credito": "Mesa de Crédito & Limites",
+            "cobranca": "Central de Cobrança & Acordos"
+        }
+        cur.execute("UPDATE admin_users SET role = ?, department = ? WHERE id = ?", (role, dept_map.get(role, "Operações"), uid))
+    if "password" in data and str(data["password"]).strip():
+        cur.execute("UPDATE admin_users SET password = ? WHERE id = ?", (str(data["password"]).strip(), uid))
+    if "status" in data:
+        cur.execute("UPDATE admin_users SET status = ? WHERE id = ?", (data["status"], uid))
+    conn.commit()
+    conn.close()
+    return web.json_response({"ok": True})
+
+
+async def api_delete_admin_user(request):
+    data = await request.json()
+    uid = data.get("id")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM admin_users WHERE id = ?", (uid,))
+    conn.commit()
+    conn.close()
+    return web.json_response({"ok": True})
+
+
 async def forbidden_client_handler(request):
     return web.json_response({
         "ok": False,
@@ -2872,6 +2953,9 @@ def create_app(role="admin"):
     app.router.add_get("/app.js", app_js_handler)
     app.router.add_get("/static/app.js", app_js_handler)
     app.router.add_post("/api/auth/login", api_auth_login)
+    app.router.add_post("/api/admin-users", api_create_admin_user)
+    app.router.add_post("/api/admin-users/update", api_update_admin_user)
+    app.router.add_post("/api/admin-users/delete", api_delete_admin_user)
     app.router.add_get("/api/state", api_state)
     app.router.add_get("/api/sync-version", api_sync_version)
     app.router.add_post("/api/leads", api_create_lead)
