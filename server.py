@@ -1529,9 +1529,35 @@ async def api_lookup_cpf(request):
 
     formatted_cpf = f"{cpf_digits[:3]}.{cpf_digits[3:6]}.{cpf_digits[6:9]}-{cpf_digits[9:]}"
 
-    # 1. Check existing card_holders in SQLite DB
+    # 1. Check cpf_bureau_cache and card_holders in SQLite DB
     conn = get_db()
     cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS cpf_bureau_cache (
+            cpf_digits TEXT PRIMARY KEY,
+            full_name TEXT,
+            rg_cnh TEXT,
+            birth_date TEXT,
+            mother_name TEXT,
+            credit_score INTEGER DEFAULT 750,
+            updated_at TEXT
+        )
+    """)
+    cur.execute("SELECT * FROM cpf_bureau_cache WHERE cpf_digits = ?", (cpf_digits,))
+    cached = cur.fetchone()
+    if cached:
+        conn.close()
+        return web.json_response({
+            "ok": True,
+            "source": "Base Cadastral / Birô Atualizado",
+            "cpf": formatted_cpf,
+            "full_name": cached["full_name"],
+            "rg_cnh": cached["rg_cnh"],
+            "birth_date": cached["birth_date"],
+            "mother_name": cached["mother_name"],
+            "credit_score": int(cached["credit_score"] or 750)
+        })
+
     cur.execute("""
         SELECT full_name, rg_cnh, birth_date, mother_name, credit_score, whatsapp, email, occupation, declared_income
         FROM card_holders
@@ -1610,6 +1636,59 @@ async def api_lookup_cpf(request):
         "mother_name": mother_name,
         "credit_score": score
     })
+
+
+async def api_save_cpf_bureau(request):
+    """Saves/updates the real Nome Completo, RG, Data de Nascimento and Nome da Mãe for a CPF in the local bureau cache & card_holders."""
+    data = await request.json()
+    cpf_digits = "".join(c for c in (data.get("cpf") or "") if c.isdigit())
+    if len(cpf_digits) != 11:
+        return web.json_response({"ok": False, "error": "CPF inválido"}, status=400)
+
+    full_name = (data.get("full_name") or "").strip()
+    rg_cnh = (data.get("rg_cnh") or "").strip()
+    birth_date = (data.get("birth_date") or "").strip()
+    mother_name = (data.get("mother_name") or "").strip()
+    credit_score = int(data.get("credit_score") or 750)
+    now_str = "2026-10-16 " + datetime.datetime.now().strftime("%H:%M")
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS cpf_bureau_cache (
+            cpf_digits TEXT PRIMARY KEY,
+            full_name TEXT,
+            rg_cnh TEXT,
+            birth_date TEXT,
+            mother_name TEXT,
+            credit_score INTEGER DEFAULT 750,
+            updated_at TEXT
+        )
+    """)
+    cur.execute("""
+        INSERT INTO cpf_bureau_cache (cpf_digits, full_name, rg_cnh, birth_date, mother_name, credit_score, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(cpf_digits) DO UPDATE SET
+            full_name = excluded.full_name,
+            rg_cnh = excluded.rg_cnh,
+            birth_date = excluded.birth_date,
+            mother_name = excluded.mother_name,
+            credit_score = excluded.credit_score,
+            updated_at = excluded.updated_at
+    """, (cpf_digits, full_name, rg_cnh, birth_date, mother_name, credit_score, now_str))
+
+    cur.execute("""
+        UPDATE card_holders
+        SET full_name = COALESCE(NULLIF(?, ''), full_name),
+            rg_cnh = COALESCE(NULLIF(?, ''), rg_cnh),
+            birth_date = COALESCE(NULLIF(?, ''), birth_date),
+            mother_name = COALESCE(NULLIF(?, ''), mother_name)
+        WHERE REPLACE(REPLACE(cpf, '.', ''), '-', '') = ?
+    """, (full_name, rg_cnh, birth_date, mother_name, cpf_digits))
+
+    conn.commit()
+    conn.close()
+    return web.json_response({"ok": True})
 
 
 async def api_send_whatsapp_card_config(request):
@@ -3209,6 +3288,7 @@ def create_app(role="admin"):
     app.router.add_get("/api/sync-version", api_sync_version)
     app.router.add_get("/api/cep", api_lookup_cep)
     app.router.add_get("/api/cpf", api_lookup_cpf)
+    app.router.add_post("/api/cpf/save", api_save_cpf_bureau)
     app.router.add_post("/api/leads", api_create_lead)
     app.router.add_post("/api/leads/whatsapp-config", api_send_whatsapp_card_config)
     app.router.add_post("/api/leads/stage", api_update_lead_stage)
