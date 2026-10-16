@@ -630,6 +630,15 @@
       white-space: nowrap;
     }
   </style>
+
+  <style>
+    /* Minimalist Super App Declutter */
+    .banner-carousel, .offers-scroll { display: none !important; }
+    .section-hdr:has(+ .offers-scroll) { display: none !important; }
+    .phone-shell { max-width: 410px !important; }
+    .app-card { padding: 16px !important; margin: 10px 16px !important; border-radius: 14px !important; }
+    .quick-dock { padding: 8px 16px 6px !important; gap: 8px !important; }
+  </style>
 </head>
 <body>
 

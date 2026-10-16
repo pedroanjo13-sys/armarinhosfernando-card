@@ -196,42 +196,15 @@ function switchTab(tabName) {
   });
 
   const titles = {
-    dashboard: [
-      'Console Master do Cartão — Gestão Executiva Private Label',
-      'Esteira com Biometria Facial, Voucher de 1ª Compra Imediata, Autorizador PDV, Seguro Conta Protegida e Faturas'
-    ],
-    leads: [
-      'Esteira de Crédito & Captação: Biometria Facial, CNH & Voucher de 1ª Compra',
-      'Capte clientes com promotoras na loja, aprove com FaceMatch e libere o Voucher para compra imediata no caixa'
-    ],
-    pos: [
-      'Autorizador PDV (Frente de Caixa) & Ranking de Comissões de Promotores',
-      'Passe vendas no Cartão ou Voucher (Vista 40 dias, Parcelado Loja ou Crediário c/ Juros) e acompanhe metas'
-    ],
-    statements: [
-      'Gestão de Faturas Mensais, Data de Corte (Melhor Dia) & Baixa PIX',
-      'Faturas completas com Compras + Anuidade Faturada + Seguro Conta Protegida e desbloqueio automático via PIX'
-    ],
-    rules: [
-      'Régua Inteligente de Relacionamento: Ativação de Voucher + Aviso de Melhor Dia + Cobrança',
-      'Aumente a recompra avisando o fechamento da fatura e recupere inadimplentes no WhatsApp'
-    ],
-    simulator: [
-      'Simulador de Parcelamento de Fatura & Super App do Portador',
-      'Tire o cliente do rotativo em até 6x fixas e visualize o Cartão Virtual BIN 6060'
-    ],
-    environments: [
-      'Visão Separada de Ambientes: 📱 Super App do Cliente vs. 🖥️ WebPOS da Loja',
-      'O Cliente NUNCA enxerga o WebPOS (Bloqueio 403), o Caixa opera apenas o WebPOS, e você (Adm do Cartão) audita tudo!'
-    ],
-    team: [
-      'Gestão de Equipe & Acessos Restritos por Nicho (Cobrança, Crédito e Adm Geral)',
-      'Cadastre colaboradores e defina estritamente quem acessa Cobrança, Mesa de Crédito ou Administração Geral'
-    ],
-    settings: [
-      'Tarifas do Cartão (Anuidade, Seguro, Rotativo) & Checklist de Implantação na Loja',
-      'Configure valores de Anuidade Faturada, Seguro Conta Protegida e veja tudo que precisa para operar na loja física'
-    ]
+    dashboard: ['Visão Executiva', ''],
+    leads: ['Mesa de Crédito & Limites', ''],
+    pos: ['Vendas & Caixa WebPOS', ''],
+    statements: ['Faturas & Cobrança', ''],
+    rules: ['Régua Automática de Cobrança', ''],
+    simulator: ['Acordos & Parcelamento', ''],
+    environments: ['Links dos Portais', ''],
+    team: ['Equipe & Acessos por Nicho', ''],
+    settings: ['Configurações da Loja', '']
   };
 
   if (titles[tabName]) {

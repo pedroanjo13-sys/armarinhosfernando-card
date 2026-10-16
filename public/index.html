@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prime Card Enterprise — Console Master de Gestão de Cartão Próprio</title>
   <link rel="stylesheet" href="/static/styles.css" />
+
+  <style>
+    /* Minimalist Admin Declutter */
+    #top-btn-team, #top-btn-env, #top-link-cadastro, #top-link-webpos { display: none !important; }
+    #leads-funnel-grid, #webpos-kpis-grid { display: none !important; }
+    #tab-environments > .card { display: none !important; }
+    #tab-settings .grid-2 { grid-template-columns: 1fr !important; max-width: 760px; }
+    #tab-settings .grid-2 > .card:nth-child(2) { display: none !important; }
+    #tab-dashboard > .card { display: none !important; }
+    .nav-badge { font-size: 10px !important; padding: 2px 7px !important; }
+    .sidebar { width: 245px !important; }
+  </style>
 </head>
 <body>
   <!-- TELA DE LOGIN COM CPF E SENHA ANTES DO DASHBOARD -->
@@ -70,19 +82,19 @@
     <ul class="nav-list">
       <li id="nav-item-dashboard">
         <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
-          <span class="nav-btn-left">📊 Painel Geral & Hoje</span>
+          <span class="nav-btn-left">📊 Visão Geral</span>
           <span class="nav-badge danger" id="nav-overdue-count">3</span>
         </button>
       </li>
       <li id="nav-item-leads">
         <button class="nav-btn" data-tab="leads" onclick="switchTab('leads')">
-          <span class="nav-btn-left">💳 Mesa de Crédito & Esteira</span>
+          <span class="nav-btn-left">💳 Mesa de Crédito</span>
           <span class="nav-badge emerald" id="nav-leads-count">8</span>
         </button>
       </li>
       <li id="nav-item-pos">
         <button class="nav-btn" data-tab="pos" onclick="switchTab('pos')">
-          <span class="nav-btn-left">🖥️ WebPOS Prime & Promotores</span>
+          <span class="nav-btn-left">🖥️ Vendas & Caixa</span>
           <span class="nav-badge" style="background:#d4af37;" id="nav-pos-count">5</span>
         </button>
       </li>
@@ -92,19 +104,19 @@
     <ul class="nav-list">
       <li id="nav-item-statements">
         <button class="nav-btn" data-tab="statements" onclick="switchTab('statements')">
-          <span class="nav-btn-left">🧾 Faturas, Corte & Cobrança</span>
+          <span class="nav-btn-left">🧾 Faturas & Cobrança</span>
           <span class="nav-badge" id="nav-statements-count">7</span>
         </button>
       </li>
       <li id="nav-item-rules">
         <button class="nav-btn" data-tab="rules" onclick="switchTab('rules')">
-          <span class="nav-btn-left">⚡ Régua de Cobrança</span>
+          <span class="nav-btn-left">⚡ Régua Automática</span>
           <span class="nav-badge" id="nav-rules-count">8</span>
         </button>
       </li>
       <li id="nav-item-simulator">
         <button class="nav-btn" data-tab="simulator" onclick="switchTab('simulator')">
-          <span class="nav-btn-left">🤝 Acordos & Renegociação</span>
+          <span class="nav-btn-left">🤝 Acordos</span>
         </button>
       </li>
     </ul>
@@ -113,19 +125,19 @@
     <ul class="nav-list">
       <li id="nav-item-team">
         <button class="nav-btn" data-tab="team" onclick="switchTab('team')">
-          <span class="nav-btn-left">👥 Equipe & Acessos (Nichos)</span>
+          <span class="nav-btn-left">👥 Equipe & Acessos</span>
           <span class="nav-badge" style="background:#3b82f6; color:#fff;" id="nav-team-count">4</span>
         </button>
       </li>
       <li id="nav-item-environments">
         <button class="nav-btn" data-tab="environments" onclick="switchTab('environments')">
-          <span class="nav-btn-left">👁️ App Cliente vs. WebPOS</span>
+          <span class="nav-btn-left">🌐 Links dos Portais</span>
           <span class="nav-badge emerald">4 Sites</span>
         </button>
       </li>
       <li id="nav-item-settings">
         <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')">
-          <span class="nav-btn-left">⚙️ Tarifas, Seguros & Setup Loja</span>
+          <span class="nav-btn-left">⚙️ Configurações</span>
         </button>
       </li>
     </ul>
@@ -216,7 +228,7 @@
         </div>
 
         <!-- Recent Logs -->
-        <div class="card">
+        <div class="card" style="display:none;">
           <div class="card-header">
             <div>
               <div class="card-title">📋 Log Operacional da Loja (Biometria, Autorizações NSU no Caixa, WhatsApp e Baixas PIX)</div>
@@ -255,7 +267,7 @@
         </div>
 
         <!-- 4-Column Funnel -->
-        <div class="funnel-grid" id="leads-funnel-grid"></div>
+        <div class="funnel-grid" id="leads-funnel-grid" style="display:none;"></div>
 
         <!-- Full Cardholders Table -->
         <div class="card">
@@ -290,7 +302,7 @@
       <!-- TAB 3: WEBPOS Prime (TERMINAL DE CAIXA, RECEBIMENTO DE FATURA, ESTORNO NSU & PROMOTORES) -->
       <section id="tab-pos" class="tab-section" style="display:none;">
         <!-- Borderô / KPIs do WebPOS -->
-        <div class="kpi-grid" id="webpos-kpis-grid" style="margin-bottom:18px;"></div>
+        <div class="kpi-grid" id="webpos-kpis-grid" style="display:none;"></div>
 
         <div class="grid-2">
           <!-- Left: Central de Operações WebPOS Prime (Venda, Recebimento de Fatura na Gaveta e Aumento de Limite) -->
@@ -686,7 +698,7 @@
           <div class="card" style="margin-bottom:0;">
             <div class="card-header">
               <div>
-                <div class="card-title">📋 Tudo que é Necessário para Rodar na Loja Física (Checklist Operacional)</div>
+                <div class="card-title" id="checklist-card-marker">📋 Checklist</div>
                 <div class="card-subtitle">Guia operacional, jurídico e tecnológico para implantar na loja</div>
               </div>
             </div>
