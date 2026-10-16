@@ -345,6 +345,32 @@ def init_db():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS admin_users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT NOT NULL,
+            cpf TEXT NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'cobranca',
+            department TEXT NOT NULL DEFAULT 'Setor de Cobrança',
+            branch TEXT NOT NULL DEFAULT 'Matriz Centro',
+            status TEXT NOT NULL DEFAULT 'ativo',
+            created_at TEXT NOT NULL
+        )
+    """)
+
+    cur.execute("SELECT COUNT(*) as c FROM admin_users")
+    if cur.fetchone()["c"] == 0:
+        cur.executemany("""
+            INSERT INTO admin_users (full_name, cpf, password, role, department, branch, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, [
+            ("Pedro Henrique Anjo", "388.776.368-82", "2030", "adm_geral", "Diretoria / Adm Geral", "Matriz Centro", "ativo", "2026-10-15 10:00"),
+            ("Carlos Eduardo Silva", "111.111.111-11", "1234", "adm_geral", "Administração Geral Master", "Matriz Centro", "ativo", "2026-10-15 10:05"),
+            ("Fernanda Lima", "222.222.222-22", "1234", "credito", "Mesa de Crédito & Limites", "Matriz Centro", "ativo", "2026-10-15 10:10"),
+            ("Marcos Vinícius Souza", "333.333.333-33", "1234", "cobranca", "Central de Cobrança & Acordos", "Matriz Centro", "ativo", "2026-10-15 10:15"),
+        ])
+
     cur.execute("SELECT COUNT(*) as c FROM card_holders")
     if cur.fetchone()["c"] == 0:
         seed_dm_data(cur)
@@ -1244,15 +1270,22 @@ async def api_state(request):
     )
 
     filter_holder_id = request.query.get("holder_id")
+    admin_users = []
     if filter_holder_id and filter_holder_id.isdigit():
         hid = int(filter_holder_id)
         holders = [h for h in holders if h["id"] == hid]
         pos_transactions = [t for t in pos_transactions if t["holder_id"] == hid]
         enriched_statements = [s for s in enriched_statements if s["holder_id"] == hid]
+    else:
+        cur = get_db().cursor()
+        cur.execute("SELECT * FROM admin_users ORDER BY id ASC")
+        admin_users = [dict(r) for r in cur.fetchall()]
+        cur.connection.close()
 
     return web.json_response({
         "today": TODAY_STR,
         "store": store,
+        "admin_users": admin_users,
         "kpis": {
             "total_leads": total_leads,
             "pending_leads": pending_leads,
@@ -2588,6 +2621,56 @@ async def api_auth_login(request):
             "ok": True,
             "holder": matched,
             "message": f"Bem-vindo(a), {matched['full_name']}!"
+        })
+
+    if mode == "admin":
+        clean_cpf = "".join(ch for ch in identifier if ch.isdigit())
+        if len(clean_cpf) < 11:
+            conn.close()
+            return web.json_response({"ok": False, "error": "Digite os 11 dígitos do CPF do colaborador."}, status=400)
+
+        cur.execute("SELECT * FROM admin_users ORDER BY id DESC")
+        rows = [dict(r) for r in cur.fetchall()]
+        matched_admin = None
+        for r in rows:
+            r_cpf = "".join(ch for ch in (r["cpf"] or "") if ch.isdigit())
+            if r_cpf == clean_cpf:
+                matched_admin = r
+                break
+
+        if not matched_admin:
+            conn.close()
+            return web.json_response({
+                "ok": False,
+                "error": "CPF não cadastrado na equipe administrativa. Solicite seu cadastro ao Adm Geral."
+            }, status=404)
+
+        if matched_admin.get("status") != "ativo":
+            conn.close()
+            return web.json_response({
+                "ok": False,
+                "error": "Acesso bloqueado pelo Adm Geral. Entre em contato com a diretoria."
+            }, status=403)
+
+        expected_pass = str(matched_admin.get("password") or "").strip()
+        if password != expected_pass:
+            conn.close()
+            return web.json_response({
+                "ok": False,
+                "error": "Senha incorreta para este CPF administrativo."
+            }, status=401)
+
+        conn.close()
+        role_labels = {
+            "adm_geral": "🛡️ Adm Geral (Acesso Total)",
+            "credito": "💳 Mesa de Crédito (Acesso Restrito: Crédito)",
+            "cobranca": "📞 Setor de Cobrança (Acesso Restrito: Cobrança)"
+        }
+        matched_admin["role_label"] = role_labels.get(matched_admin["role"], matched_admin["role"])
+        return web.json_response({
+            "ok": True,
+            "admin_user": matched_admin,
+            "message": f"Bem-vindo(a), {matched_admin['full_name']} ({matched_admin['role_label']})!"
         })
 
     conn.close()
