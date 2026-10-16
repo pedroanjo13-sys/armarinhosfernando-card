@@ -149,7 +149,7 @@ function renderAll() {
     document.documentElement.style.setProperty('--primary', store.brand_color);
   }
   document.getElementById('sidebar-card-name').textContent = store.card_brand_name || 'Cartão Armarinhos Fernando';
-  document.getElementById('sidebar-store-name').textContent = store.store_name || 'Private Label • Black & Gold';
+  document.getElementById('sidebar-store-name').textContent = store.store_name || 'Armarinhos Fernando';
   document.getElementById('sidebar-block-days').textContent = `D+${store.auto_block_days || 5} de atraso`;
   document.getElementById('sidebar-rates-summary').textContent =
     `Anuidade: ${formatBRL(store.anuidade_faturada_brl || 14.9)} • Seguro: ${formatBRL(store.seguro_protegido_brl || 9.9)} • Rotativo: ${store.rotativo_interest_pct || 11.9}%`;
