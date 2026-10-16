@@ -123,6 +123,12 @@
 
     <div class="nav-section-label" id="nav-sec-admin">Administração Geral Master</div>
     <ul class="nav-list">
+      <li id="nav-item-roi">
+        <button class="nav-btn" data-tab="roi" onclick="switchTab('roi')">
+          <span class="nav-btn-left">📈 Simulador ROI (Diretoria)</span>
+          <span class="nav-badge" style="background:#d4af37; color:#05080f;">PROPOSTA</span>
+        </button>
+      </li>
       <li id="nav-item-team">
         <button class="nav-btn" data-tab="team" onclick="switchTab('team')">
           <span class="nav-btn-left">👥 Equipe & Acessos</span>
@@ -726,6 +732,109 @@
         </div>
       </section>
 
+      <!-- TAB 7.2: SIMULADOR EXECUTIVO DE ROI & P&L PARA DIRETORIA ARMARINHOS FERNANDO -->
+      <section id="tab-roi" class="tab-section" style="display:none;">
+        <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:20px;">
+          <div class="kpi-card" style="border-left:4px solid #d4af37;">
+            <div class="kpi-label">💳 CARTEIRA PROJETADA (12 MESES)</div>
+            <div class="kpi-value" id="roi-kpi-cards">183.600 Cartões</div>
+          </div>
+          <div class="kpi-card" style="border-left:4px solid #3b82f6;">
+            <div class="kpi-label">🛒 GMV / VENDAS EXTRAS MÊS</div>
+            <div class="kpi-value" id="roi-kpi-gmv">R$ 28.641.600</div>
+          </div>
+          <div class="kpi-card" style="border-left:4px solid #10b981;">
+            <div class="kpi-label">💰 RECEITA FINANCEIRA MÊS</div>
+            <div class="kpi-value" id="roi-kpi-monthly" style="color:#6ee7b7 !important;">R$ 2.148.120</div>
+          </div>
+          <div class="kpi-card" style="border-left:4px solid #d4af37;">
+            <div class="kpi-label">🏆 LUCRO LÍQUIDO ANUAL (CARTÃO AF)</div>
+            <div class="kpi-value" id="roi-kpi-yearly">R$ 25.777.440</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: 420px 1fr;">
+          <!-- Parâmetros da Operação Armarinhos Fernando -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div class="card-title">🎛️ Parâmetros da Rede Armarinhos Fernando</div>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                  <label class="form-label" style="margin:0;">Megalojas Ativas (25 de Março, Brás, Filiais)</label>
+                  <strong style="color:#f3e5ab;" id="lbl-roi-stores">17 Lojas</strong>
+                </div>
+                <input type="range" id="roi-stores" min="1" max="30" value="17" style="width:100%; accent-color:#d4af37;" oninput="recalcRoiSimulator()" />
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                  <label class="form-label" style="margin:0;">Novos Cartões Aprovados / Loja / Dia</label>
+                  <strong style="color:#f3e5ab;" id="lbl-roi-daily">30 Cartões/dia</strong>
+                </div>
+                <input type="range" id="roi-daily" min="5" max="100" value="30" style="width:100%; accent-color:#d4af37;" oninput="recalcRoiSimulator()" />
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                  <label class="form-label" style="margin:0;">Ticket Médio Mensal (Varejo + Atacado MEI)</label>
+                  <strong style="color:#f3e5ab;" id="lbl-roi-ticket">R$ 260,00</strong>
+                </div>
+                <input type="range" id="roi-ticket" min="80" max="800" step="10" value="260" style="width:100%; accent-color:#d4af37;" oninput="recalcRoiSimulator()" />
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                  <label class="form-label" style="margin:0;">Adesão Anuidade (R$ 14,90) + Seguro (R$ 9,90)</label>
+                  <strong style="color:#f3e5ab;" id="lbl-roi-attach">65% da base</strong>
+                </div>
+                <input type="range" id="roi-attach" min="20" max="95" step="5" value="65" style="width:100%; accent-color:#d4af37;" oninput="recalcRoiSimulator()" />
+              </div>
+
+              <button type="button" class="btn btn-primary" style="width:100%; padding:13px; font-weight:900; margin-top:8px;" onclick="window.print()">
+                🖨️ EXPORTAR PROPOSTA EXECUTIVA (PDF)
+              </button>
+            </div>
+          </div>
+
+          <!-- Demonstrativo de Resultado (P&L) da Operação Private Label -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header">
+              <div class="card-title">📊 Demonstrativo de Resultado Projetado (P&L Private Label Armarinhos Fernando)</div>
+            </div>
+            <div class="card-body">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Linha de Receita / Economia Direta</th>
+                    <th>Base de Cálculo</th>
+                    <th>Resultado Mensal</th>
+                    <th>Resultado Anual (12m)</th>
+                  </tr>
+                </thead>
+                <tbody id="roi-pnl-tbody"></tbody>
+              </table>
+
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:18px;">
+                <div style="background:#070b14; border:1px solid rgba(212,175,55,0.25); border-radius:12px; padding:14px;">
+                  <div style="font-size:11px; color:#94a3b8; font-weight:700;">📦 LINHA ATACADO & MEI</div>
+                  <div style="font-size:14px; font-weight:800; color:#f3e5ab; margin-top:4px;">Caixa Fechada em até 6x</div>
+                </div>
+                <div style="background:#070b14; border:1px solid rgba(59,130,246,0.25); border-radius:12px; padding:14px;">
+                  <div style="font-size:11px; color:#94a3b8; font-weight:700;">🎒 SAZONALIDADE FORTE</div>
+                  <div style="font-size:14px; font-weight:800; color:#93c5fd; margin-top:4px;">Limite Extra Volta às Aulas & Natal</div>
+                </div>
+                <div style="background:#070b14; border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:14px;">
+                  <div style="font-size:11px; color:#94a3b8; font-weight:700;">🔌 INTEGRAÇÃO FRENTE DE CAIXA</div>
+                  <div style="font-size:14px; font-weight:800; color:#6ee7b7; margin-top:4px;">TEF SiTef / Linx / BaaS SCD</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- TAB 7.5: EQUIPE & ACESSOS RESTRITOS POR NICHO (EXCLUSIVO ADM GERAL) -->
       <section id="tab-team" class="tab-section" style="display:none;">
         <div class="kpi-grid" id="team-kpis-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:18px;">
@@ -780,8 +889,8 @@
                 <label class="form-label">Filial / Unidade</label>
                 <select id="new-staff-branch" class="select">
                   <option value="Matriz Centro">📍 Matriz Centro</option>
-                  <option value="Filial Shopping Sul">📍 Filial Shopping Sul</option>
-                  <option value="Filial Norte">📍 Filial Norte</option>
+                  <option value="Filial Shopping Sul">📍 Filial Brás (Atacado & Varejo)</option>
+                  <option value="Filial Norte">📍 Filial Santo Amaro</option>
                   <option value="Central Backoffice">🏢 Central Backoffice</option>
                 </select>
               </div>

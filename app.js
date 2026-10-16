@@ -14,7 +14,7 @@ function maskAdminCpfInput(el) {
 function getAllowedTabsForRole(role) {
   if (role === 'credito') return ['leads'];
   if (role === 'cobranca') return ['statements', 'rules', 'simulator'];
-  return ['dashboard', 'leads', 'pos', 'statements', 'rules', 'simulator', 'team', 'environments', 'settings'];
+  return ['dashboard', 'leads', 'pos', 'statements', 'rules', 'simulator', 'roi', 'team', 'environments', 'settings'];
 }
 
 function applyAdminRolePermissions(adminUser) {
@@ -37,7 +37,7 @@ function applyAdminRolePermissions(adminUser) {
   if (sbCpf) sbCpf.textContent = `CPF: ${adminUser?.cpf || ''} • ${adminUser?.branch || 'Matriz'}`;
   if (topPill) topPill.textContent = badgeMap[role] || role;
 
-  const allTabs = ['dashboard', 'leads', 'pos', 'statements', 'rules', 'simulator', 'team', 'environments', 'settings'];
+  const allTabs = ['dashboard', 'leads', 'pos', 'statements', 'rules', 'simulator', 'roi', 'team', 'environments', 'settings'];
   allTabs.forEach(t => {
     const li = document.getElementById(`nav-item-${t}`);
     if (li) li.style.display = allowed.includes(t) ? 'block' : 'none';
@@ -174,6 +174,7 @@ function renderAll() {
   renderAgreementsTable();
   populateSettingsForm();
   renderStaffTable();
+  recalcRoiSimulator();
 }
 
 function switchTab(tabName) {
@@ -202,6 +203,7 @@ function switchTab(tabName) {
     statements: ['Faturas & Cobrança', ''],
     rules: ['Régua Automática de Cobrança', ''],
     simulator: ['Acordos & Parcelamento', ''],
+    roi: ['Viabilidade Financeira & ROI — Armarinhos Fernando', ''],
     environments: ['Links dos Portais', ''],
     team: ['Equipe & Acessos por Nicho', ''],
     settings: ['Configurações da Loja', '']
@@ -1468,6 +1470,69 @@ async function pollLiveSync() {
     }
   } catch (e) {
     // ignore transient poll errors
+  }
+}
+
+function recalcRoiSimulator() {
+  const stores = Number(document.getElementById('roi-stores')?.value || 17);
+  const daily = Number(document.getElementById('roi-daily')?.value || 30);
+  const ticket = Number(document.getElementById('roi-ticket')?.value || 260);
+  const attachPct = Number(document.getElementById('roi-attach')?.value || 65);
+
+  const lblStores = document.getElementById('lbl-roi-stores');
+  const lblDaily = document.getElementById('lbl-roi-daily');
+  const lblTicket = document.getElementById('lbl-roi-ticket');
+  const lblAttach = document.getElementById('lbl-roi-attach');
+
+  if (lblStores) lblStores.textContent = `${stores} ${stores === 1 ? 'Loja' : 'Lojas'}`;
+  if (lblDaily) lblDaily.textContent = `${daily} Cartões/dia`;
+  if (lblTicket) lblTicket.textContent = formatBRL(ticket);
+  if (lblAttach) lblAttach.textContent = `${attachPct}% da base`;
+
+  const totalCards12m = stores * daily * 30 * 12;
+  const activeSpendingCards = Math.round(totalCards12m * 0.60);
+  const monthlyGmv = activeSpendingCards * ticket;
+
+  const revAncillary = Math.round(activeSpendingCards * (attachPct / 100) * (14.90 + 9.90));
+  const revInterest = Math.round(monthlyGmv * 0.22 * 0.089);
+  const mdrSavings = Math.round(monthlyGmv * 0.022);
+  const retailMarginIncremental = Math.round(monthlyGmv * 0.25 * 0.18);
+
+  const totalMonthlyNet = revAncillary + revInterest + mdrSavings + retailMarginIncremental;
+  const totalYearlyNet = totalMonthlyNet * 12;
+
+  const kCards = document.getElementById('roi-kpi-cards');
+  const kGmv = document.getElementById('roi-kpi-gmv');
+  const kMo = document.getElementById('roi-kpi-monthly');
+  const kYr = document.getElementById('roi-kpi-yearly');
+
+  if (kCards) kCards.textContent = `${totalCards12m.toLocaleString('pt-BR')} Cartões`;
+  if (kGmv) kGmv.textContent = formatBRL(monthlyGmv);
+  if (kMo) kMo.textContent = formatBRL(totalMonthlyNet);
+  if (kYr) kYr.textContent = formatBRL(totalYearlyNet);
+
+  const tbody = document.getElementById('roi-pnl-tbody');
+  if (tbody) {
+    const rows = [
+      ['1. Anuidade Faturada (R$ 14,90) + Seguro Conta Protegida (R$ 9,90)', `${attachPct}% de ${activeSpendingCards.toLocaleString('pt-BR')} faturas ativas`, revAncillary, revAncillary * 12],
+      ['2. Receita de Crediário Loja & Parcelamento de Fatura', `22% da carteira em parcelamento c/ juros`, revInterest, revInterest * 12],
+      ['3. Economia Direta de Taxa MDR de Maquininha (2,2%)', `Sobre ${formatBRL(monthlyGmv)} vendidos no cartão próprio`, mdrSavings, mdrSavings * 12],
+      ['4. Margem Incremental de Aumento de Ticket Médio (+25% no Varejo/Atacado)', `Recompra fidelizada nas ${stores} lojas`, retailMarginIncremental, retailMarginIncremental * 12]
+    ];
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td style="font-weight:800; color:#fff;">${r[0]}</td>
+        <td style="color:#94a3b8; font-size:12px;">${r[1]}</td>
+        <td style="font-weight:800; color:#93c5fd;">${formatBRL(r[2])}</td>
+        <td style="font-weight:900; color:#f3e5ab;">${formatBRL(r[3])}</td>
+      </tr>
+    `).join('') + `
+      <tr style="background:rgba(212,175,55,0.12);">
+        <td colspan="2" style="font-weight:900; color:#f3e5ab; font-size:14px;">🏆 RESULTADO LÍQUIDO TOTAL GERADO PELO CARTÃO ARMARINHOS FERNANDO</td>
+        <td style="font-weight:900; color:#6ee7b7; font-size:15px;">${formatBRL(totalMonthlyNet)}/mês</td>
+        <td style="font-weight:900; color:#f3e5ab; font-size:15px;">${formatBRL(totalYearlyNet)}/ano</td>
+      </tr>
+    `;
   }
 }
 
