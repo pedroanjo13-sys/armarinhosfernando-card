@@ -829,6 +829,66 @@
           </div>
         </div>
 
+        <!-- 3. Banner Promocional (Abaixo do Limite Disponível) -->
+        <div style="margin-top:4px;">
+          <div class="section-head">
+            <span class="section-title">✨ Ofertas & Benefícios Armarinhos Fernando</span>
+            <div class="banner-dots">
+              <span class="banner-dot active" onclick="showBanner(0)"></span>
+              <span class="banner-dot" onclick="showBanner(1)"></span>
+              <span class="banner-dot" onclick="showBanner(2)"></span>
+            </div>
+          </div>
+
+          <!-- Banner 1 -->
+          <div class="promo-banner theme-gold active" id="promo-banner-0">
+            <div style="max-width:68%;">
+              <span class="promo-tag">🔥 Oferta Exclusiva Cartão AF</span>
+              <div class="promo-title">Semana Armarinhos Fernando: Até 15% OFF + 10x Sem Juros</div>
+              <div class="promo-desc">Válido em Papelaria, Brinquedos, Bazar e Utilidades com seu Cartão AF.</div>
+              <button class="promo-cta" onclick="activatePromoCoupon('AF15VIP', '15% OFF + 10x Sem Juros ativado no seu CPF!')">⚡ Ativar Desconto no CPF</button>
+            </div>
+            <svg width="76" height="76" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="36" fill="rgba(212,175,55,0.15)" stroke="#D4AF37" stroke-width="1.5"/>
+              <rect x="18" y="26" width="44" height="28" rx="6" fill="#0B111E" stroke="#F3E5AB" stroke-width="2"/>
+              <rect x="24" y="33" width="10" height="7" rx="2" fill="#D4AF37"/>
+              <path d="M24 46H48" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="56" cy="24" r="10" fill="#D4AF37"/>
+              <text x="56" y="28" text-anchor="middle" fill="#05080F" font-size="10" font-weight="900">%</text>
+            </svg>
+          </div>
+
+          <!-- Banner 2 -->
+          <div class="promo-banner theme-blue" id="promo-banner-1">
+            <div style="max-width:68%;">
+              <span class="promo-tag" style="border-color:#60a5fa; color:#93c5fd; background:rgba(37,99,235,0.25);">💎 Clube Cashback AF</span>
+              <div class="promo-title">Ganhe Cashback na Fatura em Toda Compra na Loja</div>
+              <div class="promo-desc">Use seu cartão nas unidades 25 de Março, Brás e Filiais e ganhe desconto direto.</div>
+              <button class="promo-cta" onclick="activatePromoCoupon('CASHBACKAF', 'Cashback Armarinhos Fernando ativo para suas próximas compras!')">💎 Ativar Cashback</button>
+            </div>
+            <svg width="76" height="76" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="36" fill="rgba(59,130,246,0.18)" stroke="#60A5FA" stroke-width="1.5"/>
+              <path d="M40 18L56 32L40 62L24 32L40 18Z" fill="rgba(212,175,55,0.25)" stroke="#F3E5AB" stroke-width="2"/>
+              <circle cx="40" cy="36" r="8" fill="#D4AF37"/>
+            </svg>
+          </div>
+
+          <!-- Banner 3 -->
+          <div class="promo-banner theme-midnight" id="promo-banner-2">
+            <div style="max-width:68%;">
+              <span class="promo-tag">💳 Fôlego Financeiro</span>
+              <div class="promo-title">Parcele sua Fatura em até 12x Fixas na Hora</div>
+              <div class="promo-desc">Libere seu limite imediatamente no caixa pagando a 1ª parcela via PIX.</div>
+              <button class="promo-cta" onclick="switchAppTab('pix')">🧮 Simular Parcelamento</button>
+            </div>
+            <svg width="76" height="76" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="36" fill="rgba(212,175,55,0.14)" stroke="#D4AF37" stroke-width="1.5"/>
+              <path d="M26 52L36 40L44 46L56 28" stroke="#F3E5AB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="56" cy="28" r="4" fill="#60A5FA"/>
+            </svg>
+          </div>
+        </div>
+
       </div>
 
       <!-- TAB 2: FATURA, EXTRATO & ATALHOS RÁPIDOS -->
