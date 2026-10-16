@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: bompreco-prime-card
+    name: armarinhosfernando-card
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python3 server.py

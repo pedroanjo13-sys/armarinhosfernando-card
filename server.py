@@ -2815,7 +2815,7 @@ async def api_sync_version(request):
                 val = f.read().strip()
                 if val:
                     return val
-        render_base = (os.environ.get("RENDER_EXTERNAL_URL") or "https://bompreco-card.onrender.com").rstrip("/")
+        render_base = (os.environ.get("RENDER_EXTERNAL_URL") or "https://armarinhosfernando-card.onrender.com").rstrip("/")
         path_map = {
             "admin": f"{render_base}/",
             "webpos": f"{render_base}/webpos",
@@ -2878,8 +2878,8 @@ def _keepalive_worker():
                 ).read()
             except Exception:
                 pass
-        # Faz ping externo na URL pública do Render (https://bompreco-card.onrender.com) para nunca hibernar
-        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "https://bompreco-card.onrender.com").strip().rstrip("/")
+        # Faz ping externo na URL pública do Render para nunca hibernar
+        render_ext_url = (os.environ.get("RENDER_EXTERNAL_URL") or "https://armarinhosfernando-card.onrender.com").strip().rstrip("/")
         if render_ext_url.startswith("https://"):
             try:
                 req_r = urllib.request.Request(
